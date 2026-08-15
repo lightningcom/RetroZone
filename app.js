@@ -238,6 +238,7 @@ const state = {
   ready: false,
   playing: false,
   started: false,
+  wantPlay: false,
   scrubbing: false,
   epoch: 0,
   boundListId: ''
@@ -349,6 +350,8 @@ function cueOrLoadStationPlaylist(autoPlay) {
     if (ids.length) {
       if (autoPlay) {
         state.started = true;
+        state.wantPlay = true;
+        enableBackgroundPlayback();
         yt.loadPlaylist(ids, 0);
       } else {
         yt.cuePlaylist(ids, 0);
@@ -359,6 +362,8 @@ function cueOrLoadStationPlaylist(autoPlay) {
     const opts = { listType: 'playlist', list: listId, index: 0 };
     if (autoPlay) {
       state.started = true;
+      state.wantPlay = true;
+      enableBackgroundPlayback();
       yt.loadPlaylist(opts);
     } else {
       yt.cuePlaylist(opts);
@@ -446,6 +451,7 @@ function renderTrack() {
   if (active && el.list.classList.contains('is-open')) {
     active.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }
+  updateMediaSession();
 }
 
 function renderList() {
@@ -510,6 +516,8 @@ function go(newPos) {
   renderTrack();
   if (!yt) return;
   state.started = true;
+  state.wantPlay = true;
+  enableBackgroundPlayback();
   const ids = videoIdsInPlayOrder();
   if (ids.length && playerMatchesStation() && typeof yt.playVideoAt === 'function') {
     yt.playVideoAt(state.pos);
@@ -523,10 +531,14 @@ function go(newPos) {
 function toggle() {
   ensureAudio();
   if (!yt || !state.ready) return;
-  if (state.playing) {
+  if (state.playing || state.wantPlay) {
+    state.wantPlay = false;
+    disableBackgroundPlayback();
     yt.pauseVideo();
   } else {
     state.started = true;
+    state.wantPlay = true;
+    enableBackgroundPlayback();
     yt.playVideo();
   }
 }
@@ -613,6 +625,145 @@ function preferAudio() {
   } catch (_) {}
 }
 
+// Keep audio going when the phone is locked or the browser is minimized.
+let keepAliveTimer = null;
+let silentBed = null;
+let resumeTries = [];
+
+function unlockEmbeddedPlayback() {
+  try {
+    if (navigator.audioSession) navigator.audioSession.type = 'playback';
+  } catch (_) {}
+  const allow = 'autoplay; encrypted-media; fullscreen; picture-in-picture';
+  try {
+    const frame = window.frameElement;
+    if (frame) {
+      frame.setAttribute('allow', allow);
+      frame.setAttribute('allowfullscreen', '');
+    }
+  } catch (_) {}
+  try {
+    window.parent.document.querySelectorAll('iframe').forEach((frame) => {
+      const current = frame.getAttribute('allow') || '';
+      if (!current.includes('autoplay')) {
+        frame.setAttribute('allow', current ? `${current}; ${allow}` : allow);
+      }
+    });
+  } catch (_) {}
+  try {
+    const iframe = yt?.getIframe?.();
+    if (iframe) {
+      iframe.setAttribute('allow', allow);
+      iframe.setAttribute('playsinline', '1');
+      iframe.setAttribute('webkit-playsinline', '1');
+    }
+  } catch (_) {}
+}
+
+function startSilentBed() {
+  const ctx = ensureAudio();
+  if (!ctx || silentBed) return;
+  try {
+    if (ctx.state === 'suspended') ctx.resume();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.frequency.value = 20;
+    gain.gain.value = 0.00008;
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    silentBed = { osc, gain };
+  } catch (_) {}
+}
+
+function stopSilentBed() {
+  if (!silentBed) return;
+  try { silentBed.osc.stop(); } catch (_) {}
+  silentBed = null;
+}
+
+function resumeWantedPlayback() {
+  if (!state.wantPlay || !yt || !state.ready) return;
+  unlockEmbeddedPlayback();
+  try { audioCtx?.resume?.(); } catch (_) {}
+  startSilentBed();
+  try {
+    const status = yt.getPlayerState?.();
+    const S = window.YT && window.YT.PlayerState;
+    if (!S || status === S.PAUSED || status === S.CUED || status === S.UNSTARTED || status === -1) {
+      yt.playVideo();
+    }
+  } catch (_) {}
+}
+
+function scheduleBackgroundResume() {
+  resumeTries.forEach((id) => clearTimeout(id));
+  resumeTries = [120, 400, 1000, 2200].map((ms) =>
+    setTimeout(resumeWantedPlayback, ms)
+  );
+}
+
+function enableBackgroundPlayback() {
+  unlockEmbeddedPlayback();
+  startSilentBed();
+  if (!keepAliveTimer) {
+    keepAliveTimer = setInterval(() => {
+      if (document.visibilityState === 'hidden' || (state.wantPlay && !state.playing)) {
+        resumeWantedPlayback();
+      }
+    }, 2000);
+  }
+  updateMediaSession();
+}
+
+function disableBackgroundPlayback() {
+  resumeTries.forEach((id) => clearTimeout(id));
+  resumeTries = [];
+  if (keepAliveTimer) {
+    clearInterval(keepAliveTimer);
+    keepAliveTimer = null;
+  }
+  stopSilentBed();
+  try {
+    if (navigator.mediaSession) navigator.mediaSession.playbackState = 'paused';
+  } catch (_) {}
+}
+
+function updateMediaSession() {
+  if (!('mediaSession' in navigator)) return;
+  const t = currentTrack();
+  const station = STATIONS[currentGenre];
+  try {
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: (t && t.title) || (station && station.name) || 'हॉर्न ओके प्लीज',
+      artist: (t && t.artist) || (station && station.name) || '',
+      album: (station && station.name) || 'हिंदी हाईवे रेडियो',
+      artwork: t && t.cover ? [
+        { src: t.cover, sizes: '320x180', type: 'image/jpeg' },
+        { src: t.cover, sizes: '512x512', type: 'image/jpeg' }
+      ] : []
+    });
+    navigator.mediaSession.playbackState = state.wantPlay || state.playing ? 'playing' : 'paused';
+    navigator.mediaSession.setActionHandler('play', () => {
+      state.wantPlay = true;
+      enableBackgroundPlayback();
+      try { yt?.playVideo?.(); } catch (_) {}
+    });
+    navigator.mediaSession.setActionHandler('pause', () => {
+      state.wantPlay = false;
+      disableBackgroundPlayback();
+      try { yt?.pauseVideo?.(); } catch (_) {}
+    });
+    navigator.mediaSession.setActionHandler('nexttrack', () => go(state.pos + 1));
+    navigator.mediaSession.setActionHandler('previoustrack', () => go(state.pos - 1));
+    navigator.mediaSession.setActionHandler('stop', () => {
+      state.wantPlay = false;
+      disableBackgroundPlayback();
+      try { yt?.pauseVideo?.(); } catch (_) {}
+    });
+  } catch (_) {}
+}
+
 let ytBooted = false;
 
 function loadYouTubeApi() {
@@ -646,19 +797,25 @@ window.onYouTubeIframeAPIReady = () => {
       onReady: () => {
         state.ready = true;
         el.play.disabled = false;
+        unlockEmbeddedPlayback();
         preferAudio();
         cueOrLoadStationPlaylist(false);
       },
       onStateChange: (e) => {
         const S = YT.PlayerState;
         if (e.data === S.PLAYING) {
+          state.wantPlay = true;
           renderPlaying(true);
           preferAudio();
           syncFromPlayer();
+          updateMediaSession();
         } else if (e.data === S.CUED) {
           syncFromPlayer();
-        } else if (e.data === S.PAUSED || e.data === S.BUFFERING) {
-          renderPlaying(e.data === S.BUFFERING && state.playing);
+        } else if (e.data === S.PAUSED) {
+          if (state.wantPlay) scheduleBackgroundResume();
+          else renderPlaying(false);
+        } else if (e.data === S.BUFFERING) {
+          renderPlaying(state.playing || state.wantPlay);
         }
         // Playlist mode already advances on ENDED — do not skip ahead.
       },
@@ -1041,4 +1198,18 @@ document.addEventListener("DOMContentLoaded", async () => {
   ['pointerdown', 'keydown'].forEach(evt => {
     document.addEventListener(evt, () => ensureAudio(), { once: true, capture: true });
   });
+
+  unlockEmbeddedPlayback();
+  document.addEventListener('visibilitychange', () => {
+    if (state.wantPlay) {
+      resumeWantedPlayback();
+      if (document.visibilityState === 'hidden') scheduleBackgroundResume();
+    }
+  });
+  window.addEventListener('pagehide', () => { if (state.wantPlay) resumeWantedPlayback(); });
+  window.addEventListener('pageshow', () => { if (state.wantPlay) resumeWantedPlayback(); });
+  window.addEventListener('focus', () => { if (state.wantPlay) resumeWantedPlayback(); });
+  window.addEventListener('freeze', () => { if (state.wantPlay) resumeWantedPlayback(); }, { capture: true });
+  window.addEventListener('resume', () => { if (state.wantPlay) resumeWantedPlayback(); });
+  document.addEventListener('resume', () => { if (state.wantPlay) resumeWantedPlayback(); });
 });
