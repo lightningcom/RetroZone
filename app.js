@@ -773,6 +773,20 @@ function honk() {
 // ------------------------------------------------------------
 // 13. WEATHER & CLOCK
 // ------------------------------------------------------------
+function readUserCoords() {
+  return new Promise((resolve) => {
+    if (!navigator.geolocation) {
+      resolve(null);
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
+      () => resolve(null),
+      { enableHighAccuracy: false, timeout: 8000, maximumAge: 15 * 60 * 1000 }
+    );
+  });
+}
+
 async function fetchWeather() {
   const getWeatherEmoji = (code) => {
     if (code >= 200 && code < 300) return "🌩️";
@@ -784,18 +798,23 @@ async function fetchWeather() {
   };
 
   const applyData = (data) => {
+    if (!data || !data.main) return;
     el.weatherTemp.textContent = Math.round(data.main.temp) + "°C";
-    el.weatherIcon.textContent = getWeatherEmoji(data.weather[0].id);
-    el.weatherCity.textContent = data.name || "दिल्ली";
+    el.weatherIcon.textContent = getWeatherEmoji((data.weather && data.weather[0] && data.weather[0].id) || 801);
+    el.weatherCity.textContent = data.name || "आपकी जगह";
   };
 
   try {
-    const res = await fetch('/api/weather');
+    const coords = await readUserCoords();
+    const qs = coords
+      ? `?lat=${encodeURIComponent(coords.lat)}&lon=${encodeURIComponent(coords.lon)}`
+      : '';
+    const res = await fetch('/api/weather' + qs);
     if (res.ok) applyData(await res.json());
   } catch (_) {
-    el.weatherTemp.textContent = "28°C";
+    el.weatherTemp.textContent = "--°C";
     el.weatherIcon.textContent = "⛅";
-    el.weatherCity.textContent = "दिल्ली";
+    el.weatherCity.textContent = "लोकेशन बंद";
   }
 }
 

@@ -208,13 +208,26 @@ def fetch_youtube_playlist(playlist_id):
     return {"id": playlist_id, "title": title, "tracks": tracks}
 
 
-def fetch_weather():
+def _parse_coord(query, key, default, lo, hi):
+    raw = (query.get(key) or [None])[0]
+    if raw is None:
+        return float(default)
+    try:
+        value = float(raw)
+    except (TypeError, ValueError):
+        return float(default)
+    if value < lo or value > hi:
+        return float(default)
+    return value
+
+
+def fetch_weather(lat=None, lon=None):
     if not OWM_API_KEY:
         return None
     params = urllib.parse.urlencode(
         {
-            "lat": WEATHER_LAT,
-            "lon": WEATHER_LON,
+            "lat": WEATHER_LAT if lat is None else lat,
+            "lon": WEATHER_LON if lon is None else lon,
             "appid": OWM_API_KEY,
             "units": "metric",
         }
@@ -256,8 +269,10 @@ class RadioHandler(http.server.SimpleHTTPRequestHandler):
             return
 
         if path == "/api/weather":
+            lat = _parse_coord(query, "lat", WEATHER_LAT, -90, 90)
+            lon = _parse_coord(query, "lon", WEATHER_LON, -180, 180)
             try:
-                data = fetch_weather()
+                data = fetch_weather(lat, lon)
             except Exception as err:
                 self._json({"error": str(err)}, 502)
                 return

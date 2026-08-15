@@ -274,6 +274,10 @@ a {
 
 .weather-city {
   color: rgba(255, 255, 255, 0.65);
+  max-width: 11.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .links {
@@ -313,9 +317,9 @@ main.main {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-end;
-  padding: max(5.5rem, env(safe-area-inset-top)) var(--edge) calc(var(--dock-lift) + 7.4rem);
-  gap: 1.6rem;
+  justify-content: center;
+  padding: max(4.5rem, env(safe-area-inset-top)) var(--edge) calc(var(--dock-lift) + 5.8rem);
+  gap: 1.15rem;
   pointer-events: none;
 }
 
@@ -373,7 +377,7 @@ main.main {
   gap: 0.65rem;
   padding: 0.3rem 0.5rem;
   width: min(840px, 94vw);
-  margin-top: 0.85rem;
+  margin-top: 0.35rem;
   pointer-events: auto;
 }
 
@@ -1031,7 +1035,6 @@ main.main {
 
 /* ─── Responsive Media Queries ────────────────── */
 @media (max-width: 680px) {
-  .weather-city { display: none; }
   .presence__text { display: none; }
   .horns { left: 0.6rem; }
   .horn-btn { padding: 0.3rem 0.65rem 0.3rem 0.35rem; }
@@ -1040,7 +1043,6 @@ main.main {
   .genre-panel__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .gb-label { font-size: 0.78rem; }
   .gb-live { display: none !important; }
-  main.main { padding-bottom: calc(var(--dock-lift) + 6.6rem); gap: 1.25rem; }
 }
 
 @media (max-width: 480px) {
