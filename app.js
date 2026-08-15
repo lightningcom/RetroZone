@@ -625,186 +625,278 @@ function preferAudio() {
   } catch (_) {}
 }
 
-// Keep audio going when the phone is locked or the browser is minimized.
-let keepAliveTimer = null;
-let silentBed = null;
-let resumeTries = [];
+// Same-origin top window (Streamlit wraps us in a srcdoc iframe that phones freeze).
+function mediaWin() {
+  try {
+    void window.top.document.body;
+    return window.top;
+  } catch (_) {}
+  try {
+    void window.parent.document.body;
+    return window.parent;
+  } catch (_) {}
+  return window;
+}
 
-function unlockEmbeddedPlayback() {
+const SILENT_WAV =
+  'data:audio/wav;base64,UklGRiQCAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
+
+function markIframesAllowPlayback(doc) {
+  const allow = 'autoplay; encrypted-media; fullscreen; picture-in-picture; accelerometer';
   try {
-    if (navigator.audioSession) navigator.audioSession.type = 'playback';
-  } catch (_) {}
-  const allow = 'autoplay; encrypted-media; fullscreen; picture-in-picture';
-  try {
-    const frame = window.frameElement;
-    if (frame) {
-      frame.setAttribute('allow', allow);
-      frame.setAttribute('allowfullscreen', '');
-    }
-  } catch (_) {}
-  try {
-    window.parent.document.querySelectorAll('iframe').forEach((frame) => {
+    doc.querySelectorAll('iframe').forEach((frame) => {
       const current = frame.getAttribute('allow') || '';
       if (!current.includes('autoplay')) {
         frame.setAttribute('allow', current ? `${current}; ${allow}` : allow);
       }
+      frame.setAttribute('allowfullscreen', '');
     });
+  } catch (_) {}
+}
+
+function unlockEmbeddedPlayback() {
+  const w = mediaWin();
+  try {
+    if (w.navigator.audioSession) w.navigator.audioSession.type = 'playback';
+  } catch (_) {}
+  try {
+    if (navigator.audioSession) navigator.audioSession.type = 'playback';
+  } catch (_) {}
+  markIframesAllowPlayback(document);
+  try { markIframesAllowPlayback(w.document); } catch (_) {}
+  try {
+    const frame = window.frameElement;
+    if (frame) {
+      frame.setAttribute('allow', 'autoplay; encrypted-media; fullscreen; picture-in-picture');
+      frame.setAttribute('allowfullscreen', '');
+    }
   } catch (_) {}
   try {
     const iframe = yt?.getIframe?.();
     if (iframe) {
-      iframe.setAttribute('allow', allow);
+      iframe.setAttribute('allow', 'autoplay; encrypted-media; fullscreen; picture-in-picture');
       iframe.setAttribute('playsinline', '1');
       iframe.setAttribute('webkit-playsinline', '1');
     }
   } catch (_) {}
 }
 
-function startSilentBed() {
-  const ctx = ensureAudio();
-  if (!ctx || silentBed) return;
-  try {
-    if (ctx.state === 'suspended') ctx.resume();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.frequency.value = 20;
-    gain.gain.value = 0.00008;
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start();
-    silentBed = { osc, gain };
-  } catch (_) {}
+function ensureParentAudio() {
+  const w = mediaWin();
+  if (w.__hzAudio) return w.__hzAudio;
+  const audio = w.document.createElement('audio');
+  audio.setAttribute('playsinline', 'true');
+  audio.setAttribute('webkit-playsinline', 'true');
+  audio.setAttribute('preload', 'auto');
+  audio.loop = true;
+  audio.src = SILENT_WAV;
+  audio.volume = 1;
+  audio.style.cssText = 'position:fixed;width:1px;height:1px;opacity:0.01;left:0;bottom:0;pointer-events:none;';
+  w.document.body.appendChild(audio);
+  w.__hzAudio = audio;
+  return audio;
 }
 
-function stopSilentBed() {
-  if (!silentBed) return;
-  try { silentBed.osc.stop(); } catch (_) {}
-  silentBed = null;
+function armBackgroundAudio() {
+  unlockEmbeddedPlayback();
+  const audio = ensureParentAudio();
+  try {
+    const play = audio.play();
+    if (play && play.catch) play.catch(() => {});
+  } catch (_) {}
+  try { audioCtx?.resume?.(); } catch (_) {}
+}
+
+function installParentKeepAlive() {
+  const w = mediaWin();
+  if (w.__hzTimer) return;
+  try {
+    w.__hzKeepAliveFn = w.Function(
+      'try{if(window.__hzWant&&window.__hzYt&&window.__hzYt.playVideo){var s=window.__hzYt.getPlayerState();if(s!==1&&s!==3)window.__hzYt.playVideo()}var a=window.__hzAudio;if(window.__hzWant&&a&&a.paused){var p=a.play();if(p&&p.catch)p.catch(function(){})}if(window.navigator&&window.navigator.audioSession)window.navigator.audioSession.type="playback"}catch(e){}'
+    );
+    w.__hzTimer = w.setInterval(w.__hzKeepAliveFn, 1200);
+  } catch (_) {
+    w.__hzTimer = w.setInterval(() => {
+      try {
+        if (w.__hzWant && w.__hzYt && w.__hzYt.playVideo) {
+          const status = w.__hzYt.getPlayerState();
+          if (status !== 1 && status !== 3) w.__hzYt.playVideo();
+        }
+      } catch (__) {}
+    }, 1200);
+  }
+}
+
+function pageIsHidden() {
+  try {
+    if (mediaWin().document.hidden) return true;
+  } catch (_) {}
+  return document.hidden === true;
 }
 
 function resumeWantedPlayback() {
   if (!state.wantPlay || !yt || !state.ready) return;
+  const w = mediaWin();
+  w.__hzWant = true;
+  w.__hzYt = yt;
   unlockEmbeddedPlayback();
-  try { audioCtx?.resume?.(); } catch (_) {}
-  startSilentBed();
+  armBackgroundAudio();
   try {
     const status = yt.getPlayerState?.();
-    const S = window.YT && window.YT.PlayerState;
+    const S = (w.YT && w.YT.PlayerState) || (window.YT && window.YT.PlayerState);
     if (!S || status === S.PAUSED || status === S.CUED || status === S.UNSTARTED || status === -1) {
       yt.playVideo();
     }
   } catch (_) {}
 }
 
-function scheduleBackgroundResume() {
-  resumeTries.forEach((id) => clearTimeout(id));
-  resumeTries = [120, 400, 1000, 2200].map((ms) =>
-    setTimeout(resumeWantedPlayback, ms)
-  );
-}
-
 function enableBackgroundPlayback() {
-  unlockEmbeddedPlayback();
-  startSilentBed();
-  if (!keepAliveTimer) {
-    keepAliveTimer = setInterval(() => {
-      if (document.visibilityState === 'hidden' || (state.wantPlay && !state.playing)) {
-        resumeWantedPlayback();
-      }
-    }, 2000);
-  }
+  const w = mediaWin();
+  w.__hzWant = true;
+  w.__hzYt = yt;
+  armBackgroundAudio();
+  installParentKeepAlive();
   updateMediaSession();
 }
 
 function disableBackgroundPlayback() {
-  resumeTries.forEach((id) => clearTimeout(id));
-  resumeTries = [];
-  if (keepAliveTimer) {
-    clearInterval(keepAliveTimer);
-    keepAliveTimer = null;
-  }
-  stopSilentBed();
+  const w = mediaWin();
+  w.__hzWant = false;
   try {
-    if (navigator.mediaSession) navigator.mediaSession.playbackState = 'paused';
+    const audio = w.__hzAudio;
+    if (audio) audio.pause();
+  } catch (_) {}
+  try {
+    const session = w.navigator.mediaSession;
+    if (session) session.playbackState = 'paused';
   } catch (_) {}
 }
 
 function updateMediaSession() {
-  if (!('mediaSession' in navigator)) return;
+  const w = mediaWin();
+  const session = w.navigator && w.navigator.mediaSession;
+  if (!session) return;
   const t = currentTrack();
   const station = STATIONS[currentGenre];
+  const Meta = w.MediaMetadata || window.MediaMetadata;
   try {
-    navigator.mediaSession.metadata = new MediaMetadata({
-      title: (t && t.title) || (station && station.name) || 'हॉर्न ओके प्लीज',
-      artist: (t && t.artist) || (station && station.name) || '',
-      album: (station && station.name) || 'हिंदी हाईवे रेडियो',
-      artwork: t && t.cover ? [
-        { src: t.cover, sizes: '320x180', type: 'image/jpeg' },
-        { src: t.cover, sizes: '512x512', type: 'image/jpeg' }
-      ] : []
-    });
-    navigator.mediaSession.playbackState = state.wantPlay || state.playing ? 'playing' : 'paused';
-    navigator.mediaSession.setActionHandler('play', () => {
+    if (Meta) {
+      session.metadata = new Meta({
+        title: (t && t.title) || (station && station.name) || 'हॉर्न ओके प्लीज',
+        artist: (t && t.artist) || (station && station.name) || '',
+        album: (station && station.name) || 'हिंदी हाईवे रेडियो',
+        artwork: t && t.cover ? [
+          { src: t.cover, sizes: '320x180', type: 'image/jpeg' },
+          { src: t.cover, sizes: '512x512', type: 'image/jpeg' }
+        ] : []
+      });
+    }
+    session.playbackState = state.wantPlay || state.playing ? 'playing' : 'paused';
+    session.setActionHandler('play', () => {
       state.wantPlay = true;
       enableBackgroundPlayback();
       try { yt?.playVideo?.(); } catch (_) {}
     });
-    navigator.mediaSession.setActionHandler('pause', () => {
+    session.setActionHandler('pause', () => {
       state.wantPlay = false;
       disableBackgroundPlayback();
       try { yt?.pauseVideo?.(); } catch (_) {}
     });
-    navigator.mediaSession.setActionHandler('nexttrack', () => go(state.pos + 1));
-    navigator.mediaSession.setActionHandler('previoustrack', () => go(state.pos - 1));
-    navigator.mediaSession.setActionHandler('stop', () => {
+    session.setActionHandler('nexttrack', () => go(state.pos + 1));
+    session.setActionHandler('previoustrack', () => go(state.pos - 1));
+    session.setActionHandler('stop', () => {
       state.wantPlay = false;
       disableBackgroundPlayback();
       try { yt?.pauseVideo?.(); } catch (_) {}
     });
   } catch (_) {}
+}
+
+function mountYouTubeHost(win) {
+  let host = win.document.getElementById('hz-yt-host');
+  if (!host) {
+    host = win.document.createElement('div');
+    host.id = 'hz-yt-host';
+    host.setAttribute('aria-hidden', 'true');
+    host.style.cssText = 'position:fixed;left:0;bottom:0;width:80px;height:80px;opacity:0.12;z-index:2147483000;overflow:hidden;pointer-events:none;';
+    win.document.body.appendChild(host);
+  }
+  let mount = win.document.getElementById('hz-yt-player');
+  if (!mount) {
+    mount = win.document.createElement('div');
+    mount.id = 'hz-yt-player';
+    host.appendChild(mount);
+  }
+  return mount.id;
+}
+
+function loadYtApiOn(win) {
+  return new Promise((resolve) => {
+    if (win.YT && typeof win.YT.Player === 'function') {
+      resolve();
+      return;
+    }
+    const prev = win.onYouTubeIframeAPIReady;
+    win.onYouTubeIframeAPIReady = () => {
+      try { if (typeof prev === 'function') prev(); } catch (_) {}
+      resolve();
+    };
+    if (!win.document.querySelector('script[data-hz-yt]')) {
+      const script = win.document.createElement('script');
+      script.src = 'https://www.youtube.com/iframe_api';
+      script.setAttribute('data-hz-yt', '1');
+      win.document.head.appendChild(script);
+    }
+  });
 }
 
 let ytBooted = false;
 
 function loadYouTubeApi() {
-  if (window.YT && typeof window.YT.Player === 'function') {
-    window.onYouTubeIframeAPIReady();
-    return;
-  }
-  const s = document.createElement('script');
-  s.src = 'https://www.youtube.com/iframe_api';
-  document.head.append(s);
+  if (ytBooted) return;
+  const w = mediaWin();
+  unlockEmbeddedPlayback();
+  loadYtApiOn(w).then(bootYouTubePlayer);
 }
 
-window.onYouTubeIframeAPIReady = () => {
+function bootYouTubePlayer() {
   if (ytBooted) return;
   ytBooted = true;
+  const w = mediaWin();
+  const mountId = mountYouTubeHost(w);
   const first = currentTrack();
-  const playerVars = {
-    playsinline: 1,
-    controls: 0,
-    disablekb: 1,
-    enablejsapi: 1,
-    rel: 0,
-    autoplay: 0
-  };
-  yt = new YT.Player('yt-player', {
-    height: '1',
-    width: '1',
+  const YTref = w.YT || window.YT;
+  yt = new YTref.Player(mountId, {
+    height: '80',
+    width: '80',
     videoId: first ? first.id : undefined,
-    playerVars,
+    playerVars: {
+      playsinline: 1,
+      controls: 0,
+      disablekb: 1,
+      enablejsapi: 1,
+      rel: 0,
+      fs: 0,
+      modestbranding: 1,
+      iv_load_policy: 3,
+      origin: w.location.origin,
+      autoplay: 0
+    },
     events: {
       onReady: () => {
         state.ready = true;
         el.play.disabled = false;
+        w.__hzYt = yt;
         unlockEmbeddedPlayback();
         preferAudio();
         cueOrLoadStationPlaylist(false);
+        installParentKeepAlive();
       },
       onStateChange: (e) => {
-        const S = YT.PlayerState;
+        const S = YTref.PlayerState;
         if (e.data === S.PLAYING) {
           state.wantPlay = true;
+          w.__hzWant = true;
           renderPlaying(true);
           preferAudio();
           syncFromPlayer();
@@ -812,12 +904,11 @@ window.onYouTubeIframeAPIReady = () => {
         } else if (e.data === S.CUED) {
           syncFromPlayer();
         } else if (e.data === S.PAUSED) {
-          if (state.wantPlay) scheduleBackgroundResume();
-          else renderPlaying(false);
+          if (state.wantPlay && pageIsHidden()) resumeWantedPlayback();
+          else if (!state.wantPlay) renderPlaying(false);
         } else if (e.data === S.BUFFERING) {
           renderPlaying(state.playing || state.wantPlay);
         }
-        // Playlist mode already advances on ENDED — do not skip ahead.
       },
       onError: (e) => {
         console.warn("YouTube player error:", e.data);
@@ -827,10 +918,13 @@ window.onYouTubeIframeAPIReady = () => {
       }
     }
   });
+  w.__hzYt = yt;
 
-  setInterval(samplePlayer, 250);
+  w.setInterval(() => {
+    try { samplePlayer(); } catch (_) {}
+  }, 400);
   requestAnimationFrame(paintProgress);
-};
+}
 
 // ------------------------------------------------------------
 // 9. STATION SWITCHING
@@ -1196,20 +1290,19 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Prime audio on first touch
   ['pointerdown', 'keydown'].forEach(evt => {
-    document.addEventListener(evt, () => ensureAudio(), { once: true, capture: true });
+    document.addEventListener(evt, () => {
+      ensureAudio();
+      armBackgroundAudio();
+    }, { capture: true });
   });
 
   unlockEmbeddedPlayback();
-  document.addEventListener('visibilitychange', () => {
-    if (state.wantPlay) {
-      resumeWantedPlayback();
-      if (document.visibilityState === 'hidden') scheduleBackgroundResume();
-    }
+  const visTarget = mediaWin();
+  const onLeave = () => { if (state.wantPlay) resumeWantedPlayback(); };
+  document.addEventListener('visibilitychange', onLeave);
+  visTarget.document.addEventListener('visibilitychange', onLeave);
+  ['pagehide', 'pageshow', 'focus', 'blur', 'freeze', 'resume'].forEach((evt) => {
+    visTarget.addEventListener(evt, onLeave, { capture: true });
+    window.addEventListener(evt, onLeave, { capture: true });
   });
-  window.addEventListener('pagehide', () => { if (state.wantPlay) resumeWantedPlayback(); });
-  window.addEventListener('pageshow', () => { if (state.wantPlay) resumeWantedPlayback(); });
-  window.addEventListener('focus', () => { if (state.wantPlay) resumeWantedPlayback(); });
-  window.addEventListener('freeze', () => { if (state.wantPlay) resumeWantedPlayback(); }, { capture: true });
-  window.addEventListener('resume', () => { if (state.wantPlay) resumeWantedPlayback(); });
-  document.addEventListener('resume', () => { if (state.wantPlay) resumeWantedPlayback(); });
 });
