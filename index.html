@@ -15,6 +15,7 @@
 
   <!-- Background crossfade layers -->
   <div class="bg" aria-hidden="true">
+    <div class="bg__wash"></div>
     <div class="bg__layer bg__layer--1 is-active"></div>
     <div class="bg__layer bg__layer--2"></div>
     <div class="bg__scrim"></div>
@@ -85,52 +86,9 @@
     <div class="genre-panel" id="genre-panel" aria-hidden="true">
       <div class="genre-panel__header">
         <span class="genre-panel__title">📻 स्टेशन चुनें</span>
-        <span class="genre-panel__hint">अपना पसंदीदा चैनल सेट करें</span>
+        <span class="genre-panel__hint" id="genre-hint">अपना पसंदीदा चैनल सेट करें</span>
       </div>
-      <div class="genre-panel__grid">
-        <button class="genre-btn active" data-genre="highway" type="button">
-          <span class="gb-icon">🚛</span>
-          <div class="gb-info">
-            <span class="gb-label">ऑन द हाईवे</span>
-            <span class="gb-fm">FM 98.4 • 90s Bangers</span>
-          </div>
-        </button>
-        <button class="genre-btn" data-genre="dhaba" type="button">
-          <span class="gb-icon">❄️</span>
-          <div class="gb-info">
-            <span class="gb-label">ढाबा सूफ़ियाना</span>
-            <span class="gb-fm">FM 91.1 • Sufi & Qawwali</span>
-          </div>
-        </button>
-        <button class="genre-btn" data-genre="dance2000" type="button">
-          <span class="gb-icon">💿</span>
-          <div class="gb-info">
-            <span class="gb-label">२०००s डांस धमाका</span>
-            <span class="gb-fm">FM 102.5 • Party Hits</span>
-          </div>
-        </button>
-        <button class="genre-btn" data-genre="retro90s" type="button">
-          <span class="gb-icon">📼</span>
-          <div class="gb-info">
-            <span class="gb-label">९०s नॉस्टैल्जिया</span>
-            <span class="gb-fm">FM 88.0 • Golden Melodies</span>
-          </div>
-        </button>
-        <button class="genre-btn" data-genre="antidepression" type="button">
-          <span class="gb-icon">🌿</span>
-          <div class="gb-info">
-            <span class="gb-label">एंटी-डिप्रेशन</span>
-            <span class="gb-fm">FM 94.3 • Soul Healing</span>
-          </div>
-        </button>
-        <button class="genre-btn" data-genre="fredagain" type="button">
-          <span class="gb-icon">⚡</span>
-          <div class="gb-info">
-            <span class="gb-label">फ्रेड अगेन...</span>
-            <span class="gb-fm">FM 106.8 • Electronic</span>
-          </div>
-        </button>
-      </div>
+      <div class="genre-panel__grid" id="genre-grid"></div>
     </div>
 
     <!-- Playlist Drawer (Collapsible slide-up) -->

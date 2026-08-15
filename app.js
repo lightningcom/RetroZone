@@ -17,6 +17,8 @@ const STATIONS = {
     logoLine1: "हाईवे",
     logoLine2: "वाला रेडियो",
     playlistId: "PLfH-6xXh3waM",
+    icon: "🚛",
+    tag: "90s Bangers",
     slogans: [
       "बुरी नज़र वाले तेरा मुंह काला",
       "सफर खूबसूरत है मंजिल से भी",
@@ -39,6 +41,8 @@ const STATIONS = {
     logoLine1: "ढाबा",
     logoLine2: "सूफ़ियाना",
     playlistId: "PLDd3GFEUXVbA",
+    icon: "❄️",
+    tag: "Sufi & Qawwali",
     slogans: [
       "सर्द हवा, कुल्हड़ की चाय और सूफ़ी की धुन",
       "ढाबे की आग, दिल का सुकून",
@@ -59,6 +63,8 @@ const STATIONS = {
     logoLine1: "२०००s",
     logoLine2: "डांस धमाका",
     playlistId: "PLPo3EhjC8W4A",
+    icon: "💿",
+    tag: "Party Hits",
     slogans: [
       "रात के दो बजे डिस्को चलता है",
       "नाचो! यही वक्त है",
@@ -77,6 +83,8 @@ const STATIONS = {
     logoLine1: "नब्बे का",
     logoLine2: "दशक",
     playlistId: "PLEFafAVNRJBo",
+    icon: "📼",
+    tag: "Golden Melodies",
     slogans: [
       "कुमार सानू की आवाज़, ९०s का नशा",
       "वो दिन भी क्या दिन थे",
@@ -95,6 +103,8 @@ const STATIONS = {
     logoLine1: "मन की",
     logoLine2: "शांति",
     playlistId: "PLANlPz-KKq6k",
+    icon: "🌿",
+    tag: "Soul Healing",
     slogans: [
       "साँस लो, सुनो, शांत हो जाओ",
       "यह धुन तुम्हारे साथ है",
@@ -113,6 +123,8 @@ const STATIONS = {
     logoLine1: "फ्रेड",
     logoLine2: "अगेन...",
     playlistId: "PLZIT0z5Rfu98",
+    icon: "⚡",
+    tag: "Electronic",
     slogans: [
       "Feel it. Live it. Fred again.",
       "Dance like nobody's watching",
@@ -125,6 +137,8 @@ const STATIONS = {
     ]
   }
 };
+
+const STATION_ORDER = ["highway", "dhaba", "dance2000", "retro90s", "antidepression", "fredagain"];
 
 // ------------------------------------------------------------
 // 2. STATE VARIABLES
@@ -151,6 +165,8 @@ const el = {
   listItems: $('track-list'),
   stationsBtn: $('stations-btn'),
   genrePanel: $('genre-panel'),
+  genreGrid: $('genre-grid'),
+  genreHint: $('genre-hint'),
   clock: $('clock'),
   weatherTemp: $('weather-temp'),
   weatherIcon: $('weather-icon'),
@@ -560,6 +576,57 @@ window.onYouTubeIframeAPIReady = () => {
 // ------------------------------------------------------------
 // 9. STATION SWITCHING
 // ------------------------------------------------------------
+function renderStationChooser() {
+  if (!el.genreGrid) return;
+  el.genreGrid.replaceChildren();
+  STATION_ORDER.forEach((id, i) => {
+    const station = STATIONS[id];
+    if (!station) return;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'genre-btn' + (id === currentGenre ? ' active' : '');
+    btn.dataset.genre = id;
+    btn.setAttribute('aria-pressed', String(id === currentGenre));
+    btn.style.setProperty('--stagger', `${i * 45}ms`);
+
+    const icon = document.createElement('span');
+    icon.className = 'gb-icon';
+    icon.textContent = station.icon || '📻';
+
+    const info = document.createElement('div');
+    info.className = 'gb-info';
+    const label = document.createElement('span');
+    label.className = 'gb-label';
+    label.textContent = station.name;
+    const fm = document.createElement('span');
+    fm.className = 'gb-fm';
+    fm.textContent = station.tag ? `${station.freq} • ${station.tag}` : station.freq;
+    info.append(label, fm);
+
+    const live = document.createElement('span');
+    live.className = 'gb-live';
+    live.textContent = 'ON AIR';
+
+    btn.append(icon, info, live);
+    btn.addEventListener('click', () => {
+      ensureAudio();
+      switchGenre(id, true);
+    });
+    el.genreGrid.appendChild(btn);
+  });
+}
+
+function markActiveStation(genreId) {
+  document.querySelectorAll('.genre-btn').forEach((btn) => {
+    const on = btn.dataset.genre === genreId;
+    btn.classList.toggle('active', on);
+    btn.setAttribute('aria-pressed', String(on));
+  });
+  if (el.genreHint && STATIONS[genreId]) {
+    el.genreHint.textContent = `अभी: ${STATIONS[genreId].name} · ${STATIONS[genreId].freq}`;
+  }
+}
+
 async function switchGenre(genreId, autoPlay = true) {
   const station = STATIONS[genreId];
   if (!station) return;
@@ -574,9 +641,7 @@ async function switchGenre(genreId, autoPlay = true) {
   el.listYtLink.href = playlistUrlOf(station);
   document.getElementById('list-title').textContent = "प्लेलिस्ट — " + station.name;
 
-  document.querySelectorAll('.genre-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.genre === genreId);
-  });
+  markActiveStation(genreId);
 
   state.pos = 0;
   await loadTracksForStation(station);
@@ -756,6 +821,7 @@ function togglePlaylist() {
 function toggleGenrePanel() {
   const open = !el.genrePanel.classList.contains('is-open');
   el.genrePanel.classList.toggle('is-open', open);
+  el.genrePanel.setAttribute('aria-hidden', String(!open));
   el.stationsBtn.classList.toggle('active', open);
   el.stationsBtn.setAttribute('aria-expanded', String(open));
   if (open && el.list.classList.contains('is-open')) togglePlaylist();
@@ -769,6 +835,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   setInterval(tickClock, 10000);
   fetchWeather();
 
+  renderStationChooser();
   await switchGenre("highway", false);
   el.shuffle.classList.toggle('active', state.shuffle);
   el.shuffle.setAttribute('aria-pressed', String(state.shuffle));
@@ -800,15 +867,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   el.stationsBtn.addEventListener('click', toggleGenrePanel);
   el.hornBtn.addEventListener('click', honk);
 
-  // Genre selection
-  document.querySelectorAll('.genre-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      ensureAudio();
-      switchGenre(btn.dataset.genre, true);
-    });
-  });
-
-  // Global keybindings (Space = play/pause, H = horn, N = next, P = prev)
   document.addEventListener('keydown', (e) => {
     if (e.target.matches('input, textarea')) return;
     if (e.key === ' ' || e.key === 'k') { e.preventDefault(); toggle(); }
