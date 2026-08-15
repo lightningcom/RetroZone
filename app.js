@@ -801,37 +801,52 @@ function honk() {
   if (!ctx) return;
 
   const now = ctx.currentTime;
-  [
-    { freq: 320, type: "sawtooth" },
-    { freq: 440, type: "square" }
-  ].forEach(item => {
+  const duration = 1.35;
+  const master = ctx.createGain();
+  const filter = ctx.createBiquadFilter();
+  filter.type = "lowpass";
+  filter.frequency.setValueAtTime(980, now);
+  filter.Q.value = 0.85;
+  master.gain.setValueAtTime(0.72, now);
+  filter.connect(master);
+  master.connect(ctx.destination);
+
+  // Dual-tone air horn (classical truck / lorry): Eb + F# fifth-ish stack + sub.
+  const voices = [
+    { freq: 311.13, type: "sawtooth", gain: 0.28, detune: -6 },
+    { freq: 370.0, type: "square", gain: 0.22, detune: 4 },
+    { freq: 311.13, type: "triangle", gain: 0.16, detune: 9 },
+    { freq: 466.16, type: "sawtooth", gain: 0.09, detune: -3 },
+    { freq: 155.56, type: "sine", gain: 0.18, detune: 0 }
+  ];
+
+  voices.forEach((voice) => {
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
-    osc.type = item.type;
-    osc.frequency.setValueAtTime(item.freq, now);
-    osc.frequency.exponentialRampToValueAtTime(item.freq * 1.05, now + 0.05);
-
+    osc.type = voice.type;
+    osc.frequency.setValueAtTime(voice.freq, now);
+    osc.detune.setValueAtTime(voice.detune, now);
     gain.gain.setValueAtTime(0, now);
-    gain.gain.linearRampToValueAtTime(0.35, now + 0.06);
-    gain.gain.linearRampToValueAtTime(0.25, now + 0.35);
-    gain.gain.linearRampToValueAtTime(0.01, now + 0.45);
-    gain.gain.linearRampToValueAtTime(0.38, now + 0.5);
-    gain.gain.linearRampToValueAtTime(0.28, now + 0.85);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 1.15);
-
+    // Two blasts: short then longer "paa-paaa"
+    gain.gain.linearRampToValueAtTime(voice.gain, now + 0.018);
+    gain.gain.setValueAtTime(voice.gain, now + 0.16);
+    gain.gain.exponentialRampToValueAtTime(0.0008, now + 0.22);
+    gain.gain.setValueAtTime(0.0008, now + 0.30);
+    gain.gain.linearRampToValueAtTime(voice.gain * 1.08, now + 0.34);
+    gain.gain.setValueAtTime(voice.gain * 0.92, now + 1.05);
+    gain.gain.exponentialRampToValueAtTime(0.0008, now + duration);
     osc.connect(gain);
-    gain.connect(ctx.destination);
+    gain.connect(filter);
     osc.start(now);
-    osc.stop(now + 1.2);
+    osc.stop(now + duration + 0.02);
   });
 
-  // Wordmark rattle & Horn tactile animation
   el.logo.classList.remove('is-shaking');
   void el.logo.offsetWidth;
   el.logo.classList.add('is-shaking');
 
   el.hornBtn.classList.add('is-blaring');
-  setTimeout(() => el.hornBtn.classList.remove('is-blaring'), 450);
+  setTimeout(() => el.hornBtn.classList.remove('is-blaring'), 1350);
 }
 
 // ------------------------------------------------------------
