@@ -657,6 +657,13 @@ main.main {
   color: var(--gold);
 }
 
+.list__item.list__empty {
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.55);
+  cursor: default;
+  padding: 1.2rem;
+}
+
 .item-num {
   font-size: 0.78rem;
   color: rgba(255, 255, 255, 0.4);
