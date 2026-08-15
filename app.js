@@ -1,7 +1,7 @@
 /* ============================================================
    हॉर्न ओके प्लीज — App Engine
    Architecture directly based on hornokplease.xyz
-   - 100% reliable YouTube playback with direct video IDs
+   - YouTube playback from each station's playlist ID
    - 60fps rAF seek bar with extrapolation
    - 6 Curated Radio Stations (Highway, Dhaba, 2000s Dance, 90s Retro, Anti-Depression, Fred again..)
    - Synthesised Indian Truck Horn
@@ -12,7 +12,7 @@
 const OWM_API_KEY = "3c5abde3da68c520fb2c16ada9909fcc";
 
 // ------------------------------------------------------------
-// 1. STATION DATABASE WITH DIRECT YOUTUBE VIDEO TRACKS
+// 1. STATION DATABASE — songs come from YouTube playlist IDs
 // ------------------------------------------------------------
 const STATIONS = {
   highway: {
@@ -21,7 +21,8 @@ const STATIONS = {
     freq: "FM 98.4",
     logoLine1: "हाईवे",
     logoLine2: "वाला रेडियो",
-    playlistUrl: "https://www.youtube.com/playlist?list=PLfH-6xXh3waM_xq9ycX40mT8DItNVg7bM",
+    playlistId: "PLfH-6xXh3waM",
+    playlistUrl: "https://www.youtube.com/playlist?list=PLfH-6xXh3waM",
     slogans: [
       "बुरी नज़र वाले तेरा मुंह काला",
       "सफर खूबसूरत है मंजिल से भी",
@@ -35,17 +36,6 @@ const STATIONS = {
       "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=1920&q=80",
       "https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=1920&q=80",
       "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=1920&q=80"
-    ],
-    tracks: [
-      { id: "N0jnLZxYwYc", title: "Mujhse Mohabbat Ka Izhaar Karta", artist: "Kumar Sanu & Alka Yagnik", duration: 304, cover: "https://img.youtube.com/vi/N0jnLZxYwYc/hqdefault.jpg" },
-      { id: "3NWMK2MRqIk", title: "Tumsa Koi Pyaara", artist: "Kumar Sanu & Alka Yagnik", duration: 376, cover: "https://img.youtube.com/vi/3NWMK2MRqIk/hqdefault.jpg" },
-      { id: "9b0iydtDZLU", title: "Waada Raha Sanam", artist: "Abhijeet & Alka Yagnik", duration: 365, cover: "https://img.youtube.com/vi/9b0iydtDZLU/hqdefault.jpg" },
-      { id: "fg9G1dacXjk", title: "Chhupana Bhi Nahin Aata", artist: "Vinod Rathod (Baazigar)", duration: 253, cover: "https://img.youtube.com/vi/fg9G1dacXjk/hqdefault.jpg" },
-      { id: "u0AgbGWvzdA", title: "Jhanjharia", artist: "Abhijeet & Alka Yagnik", duration: 309, cover: "https://img.youtube.com/vi/u0AgbGWvzdA/hqdefault.jpg" },
-      { id: "YflQv9Nn-V8", title: "Tumhein Apna Banane Ki Kasam", artist: "Kumar Sanu & Anuradha Paudwal", duration: 338, cover: "https://img.youtube.com/vi/YflQv9Nn-V8/hqdefault.jpg" },
-      { id: "kC9R0Jg7040", title: "Pardesi Pardesi (Sad)", artist: "Alka Yagnik & Suresh Wadkar", duration: 310, cover: "https://img.youtube.com/vi/kC9R0Jg7040/hqdefault.jpg" },
-      { id: "7r150D3cZ1k", title: "Aye Mere Humsafar", artist: "Udit Narayan & Alka Yagnik", duration: 350, cover: "https://img.youtube.com/vi/7r150D3cZ1k/hqdefault.jpg" },
-      { id: "c18A2T8K8U4", title: "Dard Dilo Ke Kam Ho Jaate", artist: "Mohammed Irfan", duration: 305, cover: "https://img.youtube.com/vi/c18A2T8K8U4/hqdefault.jpg" }
     ]
   },
   dhaba: {
@@ -54,7 +44,8 @@ const STATIONS = {
     freq: "FM 91.1",
     logoLine1: "ढाबा",
     logoLine2: "सूफ़ियाना",
-    playlistUrl: "https://www.youtube.com/playlist?list=PLDd3GFEUXVbAE1Q55DxMCi90Mf_v-dDdk",
+    playlistId: "PLDd3GFEUXVbA",
+    playlistUrl: "https://www.youtube.com/playlist?list=PLDd3GFEUXVbA",
     slogans: [
       "सर्द हवा, कुल्हड़ की चाय और सूफ़ी की धुन",
       "ढाबे की आग, दिल का सुकून",
@@ -66,15 +57,6 @@ const STATIONS = {
       "https://images.unsplash.com/photo-1486496146582-9ffcd0b2b2b7?auto=format&fit=crop&w=1920&q=80",
       "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1920&q=80",
       "https://images.unsplash.com/photo-1548777123-e216912df7f8?auto=format&fit=crop&w=1920&q=80"
-    ],
-    tracks: [
-      { id: "e_z24a_bZ04", title: "Afreen Afreen", artist: "Rahat Fateh Ali Khan & Momina", duration: 405, cover: "https://img.youtube.com/vi/e_z24a_bZ04/hqdefault.jpg" },
-      { id: "0B1zKzUv56M", title: "Kun Faya Kun", artist: "A.R. Rahman, Javed Ali, Mohit Chauhan", duration: 472, cover: "https://img.youtube.com/vi/0B1zKzUv56M/hqdefault.jpg" },
-      { id: "0WkOxYmbdt4", title: "Mere Rashke Qamar", artist: "Nusrat Fateh Ali Khan", duration: 220, cover: "https://img.youtube.com/vi/0WkOxYmbdt4/hqdefault.jpg" },
-      { id: "yIIGQP7V4GY", title: "Chaap Tilak", artist: "Abida Parveen & Rahat Fateh Ali Khan", duration: 540, cover: "https://img.youtube.com/vi/yIIGQP7V4GY/hqdefault.jpg" },
-      { id: "vS2LvxEE7qQ", title: "Teri Deewani", artist: "Kailash Kher", duration: 320, cover: "https://img.youtube.com/vi/vS2LvxEE7qQ/hqdefault.jpg" },
-      { id: "kw4tT7SCmaY", title: "Tajdar-e-Haram", artist: "Atif Aslam", duration: 628, cover: "https://img.youtube.com/vi/kw4tT7SCmaY/hqdefault.jpg" },
-      { id: "pA_mE1s0H28", title: "Maula Mere Maula", artist: "Roop Kumar Rathod", duration: 350, cover: "https://img.youtube.com/vi/pA_mE1s0H28/hqdefault.jpg" }
     ]
   },
   dance2000: {
@@ -93,14 +75,6 @@ const STATIONS = {
     wallpapers: [
       "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=1920&q=80",
       "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1920&q=80"
-    ],
-    tracks: [
-      { id: "3Rfb74x0-8Q", title: "Mauja Hi Mauja", artist: "Mika Singh (Jab We Met)", duration: 245, cover: "https://img.youtube.com/vi/3Rfb74x0-8Q/hqdefault.jpg" },
-      { id: "Wq54FzV5s4E", title: "Dus Bahane", artist: "Shaan & KK (Dus)", duration: 210, cover: "https://img.youtube.com/vi/Wq54FzV5s4E/hqdefault.jpg" },
-      { id: "W_K_m10Y_G4", title: "Dhoom Machale", artist: "Sunidhi Chauhan (Dhoom)", duration: 230, cover: "https://img.youtube.com/vi/W_K_m10Y_G4/hqdefault.jpg" },
-      { id: "xW2O6k_v5bU", title: "It's the Time to Disco", artist: "Shaan, Vasundhara Das, KK", duration: 333, cover: "https://img.youtube.com/vi/xW2O6k_v5bU/hqdefault.jpg" },
-      { id: "7zp1TbLFPp8", title: "Desi Girl", artist: "Shankar Mahadevan & Sunidhi Chauhan", duration: 305, cover: "https://img.youtube.com/vi/7zp1TbLFPp8/hqdefault.jpg" },
-      { id: "1yBm6X1fQEQ", title: "Rock N Roll Soniye", artist: "Shankar Mahadevan, Shaan", duration: 340, cover: "https://img.youtube.com/vi/1yBm6X1fQEQ/hqdefault.jpg" }
     ]
   },
   retro90s: {
@@ -119,13 +93,6 @@ const STATIONS = {
     wallpapers: [
       "https://images.unsplash.com/photo-1461360370896-922624d12aa1?auto=format&fit=crop&w=1920&q=80",
       "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1920&q=80"
-    ],
-    tracks: [
-      { id: "4h0K5hZ4m_0", title: "Chura Ke Dil Mera", artist: "Kumar Sanu & Alka Yagnik", duration: 350, cover: "https://img.youtube.com/vi/4h0K5hZ4m_0/hqdefault.jpg" },
-      { id: "M_p0xN8P9yU", title: "Dheere Dheere Se", artist: "Kumar Sanu & Anuradha Paudwal", duration: 320, cover: "https://img.youtube.com/vi/M_p0xN8P9yU/hqdefault.jpg" },
-      { id: "1_VbF-V_f0g", title: "Pehla Nasha", artist: "Udit Narayan & Sadhana Sargam", duration: 290, cover: "https://img.youtube.com/vi/1_VbF-V_f0g/hqdefault.jpg" },
-      { id: "cNV5hL42g74", title: "Tujhe Dekha Toh", artist: "Kumar Sanu & Lata Mangeshkar", duration: 302, cover: "https://img.youtube.com/vi/cNV5hL42g74/hqdefault.jpg" },
-      { id: "Q_40jP7F_1M", title: "Tip Tip Barsa Paani", artist: "Alka Yagnik & Udit Narayan", duration: 355, cover: "https://img.youtube.com/vi/Q_40jP7F_1M/hqdefault.jpg" }
     ]
   },
   antidepression: {
@@ -144,13 +111,6 @@ const STATIONS = {
     wallpapers: [
       "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1920&q=80",
       "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=1920&q=80"
-    ],
-    tracks: [
-      { id: "fSS_R91Nimw", title: "Iktara", artist: "Amit Trivedi & Kavita Seth", duration: 254, cover: "https://img.youtube.com/vi/fSS_R91Nimw/hqdefault.jpg" },
-      { id: "jHNNMj5bNQw", title: "Kabira (Acoustic)", artist: "Tochi Raina & Rekha Bhardwaj", duration: 223, cover: "https://img.youtube.com/vi/jHNNMj5bNQw/hqdefault.jpg" },
-      { id: "h_fM2eJv2y4", title: "Sham", artist: "Amit Trivedi & Nikhil D'Souza", duration: 284, cover: "https://img.youtube.com/vi/h_fM2eJv2y4/hqdefault.jpg" },
-      { id: "V476m5_t-zM", title: "Baarishein", artist: "Anuv Jain", duration: 208, cover: "https://img.youtube.com/vi/V476m5_t-zM/hqdefault.jpg" },
-      { id: "6B3_C7F3j_M", title: "Phir Le Aya Dil", artist: "Arijit Singh & Pritam", duration: 305, cover: "https://img.youtube.com/vi/6B3_C7F3j_M/hqdefault.jpg" }
     ]
   },
   fredagain: {
@@ -159,7 +119,8 @@ const STATIONS = {
     freq: "FM 106.8",
     logoLine1: "फ्रेड",
     logoLine2: "अगेन...",
-    playlistUrl: "https://www.youtube.com/playlist?list=PLZIT0z5Rfu98GEqiC7T7lknMLGYNHiEtU",
+    playlistId: "PLZIT0z5Rfu98",
+    playlistUrl: "https://www.youtube.com/playlist?list=PLZIT0z5Rfu98",
     slogans: [
       "Feel it. Live it. Fred again.",
       "Dance like nobody's watching",
@@ -169,14 +130,6 @@ const STATIONS = {
     wallpapers: [
       "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?auto=format&fit=crop&w=1920&q=80",
       "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=1920&q=80"
-    ],
-    tracks: [
-      { id: "vj0gNfB27jY", title: "Delilah (pull me out of this)", artist: "Fred again..", duration: 250, cover: "https://img.youtube.com/vi/vj0gNfB27jY/hqdefault.jpg" },
-      { id: "F77w_Hl60c8", title: "Jungle", artist: "Fred again..", duration: 198, cover: "https://img.youtube.com/vi/F77w_Hl60c8/hqdefault.jpg" },
-      { id: "qEkn0r9Vn_Q", title: "Rumble", artist: "Skrillex, Fred again.. & Flowdan", duration: 146, cover: "https://img.youtube.com/vi/qEkn0r9Vn_Q/hqdefault.jpg" },
-      { id: "U31y_s9q_t0", title: "leavemealone", artist: "Fred again.. & Baby Keem", duration: 222, cover: "https://img.youtube.com/vi/U31y_s9q_t0/hqdefault.jpg" },
-      { id: "N3dJ_p7l9iU", title: "adore u", artist: "Fred again.. & Obongjayar", duration: 220, cover: "https://img.youtube.com/vi/N3dJ_p7l9iU/hqdefault.jpg" },
-      { id: "g-5Vf0N24d0", title: "Marea (we've lost dancing)", artist: "Fred again..", duration: 285, cover: "https://img.youtube.com/vi/g-5Vf0N24d0/hqdefault.jpg" }
     ]
   }
 };
@@ -250,6 +203,99 @@ const fmtTime = (s) => {
   return `${m}:${String(sec).padStart(2, '0')}`;
 };
 
+function playlistIdOf(station) {
+  if (!station) return '';
+  if (station.playlistId) return station.playlistId;
+  const m = String(station.playlistUrl || '').match(/[?&]list=([^&]+)/);
+  return m ? decodeURIComponent(m[1]) : '';
+}
+
+function trackFromId(id, fallback = {}) {
+  const station = STATIONS[currentGenre];
+  return {
+    id,
+    title: fallback.title || 'YouTube',
+    artist: fallback.artist || (station && station.name) || '',
+    duration: fallback.duration || 0,
+    cover: fallback.cover || `https://img.youtube.com/vi/${id}/hqdefault.jpg`
+  };
+}
+
+function applyTracks(tracks) {
+  state.tracks = tracks;
+  state.order = tracks.map((_, i) => i);
+  if (state.pos >= tracks.length) state.pos = 0;
+  renderList();
+  renderTrack();
+}
+
+async function loadTracksForStation(station) {
+  const listId = playlistIdOf(station);
+  el.title.textContent = 'प्लेलिस्ट लोड हो रही है...';
+  el.artist.textContent = station.name;
+  if (!listId) {
+    applyTracks([]);
+    return;
+  }
+  try {
+    const res = await fetch(`/api/playlist?list=${encodeURIComponent(listId)}`);
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data.tracks) && data.tracks.length) {
+        applyTracks(data.tracks);
+        return;
+      }
+    }
+  } catch (err) {
+    console.warn('Playlist fetch failed:', err);
+  }
+  applyTracks([]);
+}
+
+function cueOrLoadStationPlaylist(autoPlay) {
+  const listId = playlistIdOf(STATIONS[currentGenre]);
+  if (!yt || !listId) return;
+  const opts = { listType: 'playlist', list: listId, index: 0 };
+  try {
+    if (autoPlay) {
+      state.started = true;
+      yt.loadPlaylist(opts);
+    } else {
+      yt.cuePlaylist(opts);
+    }
+    yt.setShuffle?.(state.shuffle);
+  } catch (err) {
+    console.warn('Could not load YouTube playlist:', err);
+  }
+}
+
+function hydrateCurrentFromPlayer() {
+  if (!yt) return;
+  try {
+    const data = yt.getVideoData?.() || {};
+    const t = currentTrack();
+    if (!t) return;
+    if (data.title) t.title = data.title;
+    if (data.author) t.artist = data.author;
+    const dur = yt.getDuration?.();
+    if (dur) t.duration = Math.round(dur);
+  } catch (_) {}
+}
+
+function syncFromPlayer() {
+  if (!yt || typeof yt.getPlaylist !== 'function') return;
+  const ids = yt.getPlaylist();
+  if (!Array.isArray(ids) || !ids.length) return;
+  const byId = Object.fromEntries(state.tracks.map((t) => [t.id, t]));
+  state.tracks = ids.map((id) => trackFromId(id, byId[id] || {}));
+  state.order = state.tracks.map((_, i) => i);
+  const idx = yt.getPlaylistIndex?.();
+  state.pos = Number.isInteger(idx) && idx >= 0 ? idx : 0;
+  hydrateCurrentFromPlayer();
+  renderList();
+  renderTrack();
+}
+
 function shuffleArr(arr) {
   for (let i = arr.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -296,7 +342,7 @@ function renderList() {
   if (!state.order.length) {
     const empty = document.createElement('li');
     empty.className = 'list__item list__empty';
-    empty.textContent = 'प्लेलिस्ट लोड नहीं हो सकी';
+    empty.textContent = 'इस प्लेलिस्ट में अभी गाने नहीं हैं';
     el.listItems.appendChild(empty);
     return;
   }
@@ -353,7 +399,8 @@ function go(newPos) {
   renderTrack();
   if (!yt) return;
   state.started = true;
-  yt.loadVideoById(currentTrack().id);
+  if (typeof yt.playVideoAt === 'function') yt.playVideoAt(state.pos);
+  else if (currentTrack()) yt.loadVideoById(currentTrack().id);
 }
 
 function toggle() {
@@ -451,20 +498,6 @@ function preferAudio() {
 
 let ytBooted = false;
 
-async function loadStationPlaylists() {
-  try {
-    const res = await fetch('stations_tracks.json', { cache: 'no-store' });
-    if (!res.ok) throw new Error(`playlist HTTP ${res.status}`);
-    const db = await res.json();
-    Object.keys(STATIONS).forEach((id) => {
-      const tracks = db[id];
-      if (Array.isArray(tracks) && tracks.length) STATIONS[id].tracks = tracks;
-    });
-  } catch (err) {
-    console.warn('Using embedded playlists:', err);
-  }
-}
-
 function loadYouTubeApi() {
   if (window.YT && typeof window.YT.Player === 'function') {
     window.onYouTubeIframeAPIReady();
@@ -478,39 +511,49 @@ function loadYouTubeApi() {
 window.onYouTubeIframeAPIReady = () => {
   if (ytBooted) return;
   ytBooted = true;
-  const firstTrack = currentTrack();
+  const listId = playlistIdOf(STATIONS[currentGenre]);
+  const playerVars = {
+    playsinline: 1,
+    controls: 0,
+    disablekb: 1,
+    modestbranding: 1,
+    rel: 0,
+    autoplay: 0
+  };
+  if (listId) {
+    playerVars.listType = 'playlist';
+    playerVars.list = listId;
+    playerVars.index = 0;
+  }
   yt = new YT.Player('yt-player', {
     height: '1',
     width: '1',
-    videoId: firstTrack ? firstTrack.id : 'N0jnLZxYwYc',
-    playerVars: {
-      playsinline: 1,
-      controls: 0,
-      disablekb: 1,
-      modestbranding: 1,
-      rel: 0,
-      autoplay: 0
-    },
+    playerVars,
     events: {
       onReady: () => {
         state.ready = true;
         el.play.disabled = false;
         preferAudio();
+        cueOrLoadStationPlaylist(false);
       },
       onStateChange: (e) => {
         const S = YT.PlayerState;
         if (e.data === S.PLAYING) {
           renderPlaying(true);
           preferAudio();
+          syncFromPlayer();
+        } else if (e.data === S.CUED) {
+          syncFromPlayer();
         } else if (e.data === S.PAUSED || e.data === S.BUFFERING) {
           renderPlaying(e.data === S.BUFFERING && state.playing);
-        } else if (e.data === S.ENDED) {
-          go(state.pos + 1);
         }
+        // Playlist mode already advances on ENDED — do not skip ahead.
       },
       onError: (e) => {
         console.warn("YouTube player error:", e.data);
-        if (state.started) setTimeout(() => go(state.pos + 1), 1000);
+        if (state.started && typeof yt.nextVideo === 'function') {
+          setTimeout(() => yt.nextVideo(), 800);
+        }
       }
     }
   });
@@ -522,7 +565,7 @@ window.onYouTubeIframeAPIReady = () => {
 // ------------------------------------------------------------
 // 9. STATION SWITCHING
 // ------------------------------------------------------------
-function switchGenre(genreId, autoPlay = true) {
+async function switchGenre(genreId, autoPlay = true) {
   const station = STATIONS[genreId];
   if (!station) return;
 
@@ -536,29 +579,18 @@ function switchGenre(genreId, autoPlay = true) {
   el.listYtLink.href = station.playlistUrl;
   document.getElementById('list-title').textContent = "प्लेलिस्ट — " + station.name;
 
-  // Update genre buttons
   document.querySelectorAll('.genre-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.genre === genreId);
   });
 
-  // Load tracks
-  state.tracks = station.tracks;
-  state.order = buildOrder();
   state.pos = 0;
-  renderList();
-  renderTrack();
+  await loadTracksForStation(station);
 
-  // Wallpapers & Slogans
   startWallpaperRotation(station.wallpapers);
   cycleSlogans(station.slogans);
 
-  // Play immediately if user clicked
-  if (yt && state.ready && autoPlay) {
-    state.started = true;
-    yt.loadVideoById(currentTrack().id);
-  }
+  if (yt && state.ready) cueOrLoadStationPlaylist(autoPlay);
 
-  // Close panel
   if (el.genrePanel.classList.contains('is-open')) toggleGenrePanel();
 }
 
@@ -732,8 +764,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   setInterval(tickClock, 10000);
   fetchWeather();
 
-  await loadStationPlaylists();
-  switchGenre("highway", false);
+  await switchGenre("highway", false);
   el.shuffle.classList.toggle('active', state.shuffle);
   el.shuffle.setAttribute('aria-pressed', String(state.shuffle));
   loadYouTubeApi();
@@ -747,14 +778,17 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   el.shuffle.addEventListener('click', () => {
-    const keep = currentTrack();
     state.shuffle = !state.shuffle;
     el.shuffle.classList.toggle('active', state.shuffle);
     el.shuffle.setAttribute('aria-pressed', String(state.shuffle));
-    state.order = buildOrder();
-    state.pos = Math.max(0, state.order.indexOf(state.tracks.indexOf(keep)));
-    renderList();
-    renderTrack();
+    try { yt?.setShuffle?.(state.shuffle); } catch (_) {}
+    if (yt && state.ready) setTimeout(syncFromPlayer, 250);
+    else {
+      state.order = buildOrder();
+      state.pos = 0;
+      renderList();
+      renderTrack();
+    }
   });
 
   el.listBtn.addEventListener('click', togglePlaylist);
