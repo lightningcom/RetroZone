@@ -1054,8 +1054,20 @@ main.main {
 
 /* ─── Responsive Media Queries ────────────────── */
 @media (max-width: 680px) {
+  :root {
+    /* Sit above Streamlit's "Made with Streamlit" badge */
+    --dock-lift: max(5.4rem, calc(env(safe-area-inset-bottom) + 4.2rem));
+  }
   .presence__text { display: none; }
-  .horns { left: 0.6rem; }
+  .horns {
+    top: auto;
+    left: 0.6rem;
+    bottom: calc(var(--dock-lift) + 5.8rem);
+    transform: none;
+  }
+  main.main {
+    padding-bottom: calc(var(--dock-lift) + 9.2rem);
+  }
   .horn-btn { padding: 0.3rem 0.65rem 0.3rem 0.35rem; }
   .horn__deva { font-size: 0.74rem; }
   .genre-panel { width: min(100% - 1.2rem, 760px); }

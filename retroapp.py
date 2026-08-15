@@ -22,11 +22,16 @@ st.markdown(
   [data-testid="stStatusWidget"],
   [data-testid="stHeader"],
   [data-testid="stSidebar"],
-  [data-testid="collapsedControl"] {
+  [data-testid="collapsedControl"],
+  [data-testid="stBottomBlockContainer"],
+  [class*="viewerBadge"],
+  a[href="https://streamlit.io"],
+  a[href*="streamlit.io"] {
     visibility: hidden !important;
     height: 0 !important;
     min-height: 0 !important;
     display: none !important;
+    pointer-events: none !important;
   }
   .block-container,
   [data-testid="block-container"],
