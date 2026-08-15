@@ -23,4 +23,15 @@ python3 server.py
 
 Open http://localhost:3000
 
+## Streamlit
+
+The live app is `retroapp.py` (also `streamlit_app.py`). Streamlit Cloud inlines the player and bakes in each station’s YouTube tracks, so it does not need `server.py`.
+
+```bash
+pip install -r requirements.txt
+streamlit run retroapp.py
+```
+
+Optional Streamlit secrets: `OWM_API_KEY`, `WEATHER_LAT`, `WEATHER_LON`.
+
 Secrets stay in `.env` (not committed). The OpenWeatherMap key is used only on the server via `/api/weather`.

@@ -25,6 +25,14 @@ ALLOWED_PLAYLIST_IDS = {
     "PLANlPz-KKq6k",  # anti-depression
     "PLZIT0z5Rfu98",  # fred again
 }
+STATION_PLAYLISTS = {
+    "highway": "PLfH-6xXh3waM",
+    "dhaba": "PLDd3GFEUXVbA",
+    "dance2000": "PLPo3EhjC8W4A",
+    "retro90s": "PLEFafAVNRJBo",
+    "antidepression": "PLANlPz-KKq6k",
+    "fredagain": "PLZIT0z5Rfu98",
+}
 
 
 def load_dotenv(path):

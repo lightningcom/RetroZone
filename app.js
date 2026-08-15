@@ -249,11 +249,11 @@ function videoIdsInPlayOrder() {
 function playerMatchesStation() {
   if (!yt) return false;
   const expected = new Set(state.tracks.map((t) => t.id));
-  if (!expected.size) return false;
   try {
     const vid = yt.getVideoData?.()?.video_id;
-    if (vid && expected.has(vid)) return true;
     const ids = yt.getPlaylist?.() || [];
+    if (!expected.size) return ids.length > 0 || Boolean(vid);
+    if (vid && expected.has(vid)) return true;
     if (!ids.length) return false;
     const hits = ids.filter((id) => expected.has(id)).length;
     return hits >= Math.min(2, expected.size) || hits / ids.length >= 0.5;
@@ -268,6 +268,11 @@ async function loadTracksForStation(station, epoch) {
   el.artist.textContent = station.name;
   if (!listId) {
     if (epoch === state.epoch) applyTracks([]);
+    return;
+  }
+  const boot = window.BOOTSTRAP && window.BOOTSTRAP.tracks && window.BOOTSTRAP.tracks[station.id];
+  if (Array.isArray(boot) && boot.length) {
+    if (epoch === state.epoch) applyTracks(boot);
     return;
   }
   try {
@@ -576,23 +581,19 @@ function loadYouTubeApi() {
 window.onYouTubeIframeAPIReady = () => {
   if (ytBooted) return;
   ytBooted = true;
-  const listId = playlistIdOf(STATIONS[currentGenre]);
+  const first = currentTrack();
   const playerVars = {
     playsinline: 1,
     controls: 0,
     disablekb: 1,
-    modestbranding: 1,
+    enablejsapi: 1,
     rel: 0,
     autoplay: 0
   };
-  if (listId) {
-    playerVars.listType = 'playlist';
-    playerVars.list = listId;
-    playerVars.index = 0;
-  }
   yt = new YT.Player('yt-player', {
     height: '1',
     width: '1',
+    videoId: first ? first.id : undefined,
     playerVars,
     events: {
       onReady: () => {
@@ -872,12 +873,21 @@ async function fetchWeather() {
     const qs = coords
       ? `?lat=${encodeURIComponent(coords.lat)}&lon=${encodeURIComponent(coords.lon)}`
       : '';
+    const bootWx = window.BOOTSTRAP && window.BOOTSTRAP.weather;
     const res = await fetch('/api/weather' + qs);
-    if (res.ok) applyData(await res.json());
+    if (res.ok) {
+      applyData(await res.json());
+      return;
+    }
+    if (bootWx) applyData(bootWx);
   } catch (_) {
-    el.weatherTemp.textContent = "--°C";
-    el.weatherIcon.textContent = "⛅";
-    el.weatherCity.textContent = "लोकेशन बंद";
+    const bootWx = window.BOOTSTRAP && window.BOOTSTRAP.weather;
+    if (bootWx) applyData(bootWx);
+    else {
+      el.weatherTemp.textContent = "--°C";
+      el.weatherIcon.textContent = "⛅";
+      el.weatherCity.textContent = "लोकेशन बंद";
+    }
   }
 }
 
