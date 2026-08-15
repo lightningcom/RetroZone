@@ -191,7 +191,9 @@ const state = {
   ready: false,
   playing: false,
   started: false,
-  scrubbing: false
+  scrubbing: false,
+  epoch: 0,
+  boundListId: ''
 };
 
 let yt = null;
@@ -234,24 +236,46 @@ function trackFromId(id, fallback = {}) {
 
 function applyTracks(tracks) {
   state.tracks = tracks;
-  state.order = tracks.map((_, i) => i);
-  if (state.pos >= tracks.length) state.pos = 0;
+  state.order = buildOrder();
+  if (state.pos >= state.order.length) state.pos = 0;
   renderList();
   renderTrack();
 }
 
-async function loadTracksForStation(station) {
+function videoIdsInPlayOrder() {
+  return state.order.map((i) => state.tracks[i] && state.tracks[i].id).filter(Boolean);
+}
+
+function playerMatchesStation() {
+  if (!yt) return false;
+  const expected = new Set(state.tracks.map((t) => t.id));
+  if (!expected.size) return false;
+  try {
+    const vid = yt.getVideoData?.()?.video_id;
+    if (vid && expected.has(vid)) return true;
+    const ids = yt.getPlaylist?.() || [];
+    if (!ids.length) return false;
+    const hits = ids.filter((id) => expected.has(id)).length;
+    return hits >= Math.min(2, expected.size) || hits / ids.length >= 0.5;
+  } catch (_) {
+    return false;
+  }
+}
+
+async function loadTracksForStation(station, epoch) {
   const listId = playlistIdOf(station);
   el.title.textContent = 'प्लेलिस्ट लोड हो रही है...';
   el.artist.textContent = station.name;
   if (!listId) {
-    applyTracks([]);
+    if (epoch === state.epoch) applyTracks([]);
     return;
   }
   try {
     const res = await fetch(`/api/playlist?list=${encodeURIComponent(listId)}`);
+    if (epoch !== state.epoch) return;
     if (res.ok) {
       const data = await res.json();
+      if (epoch !== state.epoch) return;
       if (Array.isArray(data.tracks) && data.tracks.length) {
         applyTracks(data.tracks);
         return;
@@ -260,21 +284,33 @@ async function loadTracksForStation(station) {
   } catch (err) {
     console.warn('Playlist fetch failed:', err);
   }
-  applyTracks([]);
+  if (epoch === state.epoch) applyTracks([]);
 }
 
 function cueOrLoadStationPlaylist(autoPlay) {
+  if (!yt) return;
   const listId = playlistIdOf(STATIONS[currentGenre]);
-  if (!yt || !listId) return;
-  const opts = { listType: 'playlist', list: listId, index: 0 };
+  const ids = videoIdsInPlayOrder();
+  state.boundListId = listId;
+  try { yt.stopVideo?.(); } catch (_) {}
   try {
+    if (ids.length) {
+      if (autoPlay) {
+        state.started = true;
+        yt.loadPlaylist(ids, 0);
+      } else {
+        yt.cuePlaylist(ids, 0);
+      }
+      return;
+    }
+    if (!listId) return;
+    const opts = { listType: 'playlist', list: listId, index: 0 };
     if (autoPlay) {
       state.started = true;
       yt.loadPlaylist(opts);
     } else {
       yt.cuePlaylist(opts);
     }
-    yt.setShuffle?.(state.shuffle);
   } catch (err) {
     console.warn('Could not load YouTube playlist:', err);
   }
@@ -284,6 +320,7 @@ function hydrateCurrentFromPlayer() {
   if (!yt) return;
   try {
     const data = yt.getVideoData?.() || {};
+    if (data.video_id && !state.tracks.some((t) => t.id === data.video_id)) return;
     const t = currentTrack();
     if (!t) return;
     if (data.title) t.title = data.title;
@@ -294,14 +331,25 @@ function hydrateCurrentFromPlayer() {
 }
 
 function syncFromPlayer() {
-  if (!yt || typeof yt.getPlaylist !== 'function') return;
-  const ids = yt.getPlaylist();
-  if (!Array.isArray(ids) || !ids.length) return;
+  if (!yt || !playerMatchesStation()) return;
+  const ids = typeof yt.getPlaylist === 'function' ? yt.getPlaylist() : [];
   const byId = Object.fromEntries(state.tracks.map((t) => [t.id, t]));
-  state.tracks = ids.map((id) => trackFromId(id, byId[id] || {}));
-  state.order = state.tracks.map((_, i) => i);
-  const idx = yt.getPlaylistIndex?.();
-  state.pos = Number.isInteger(idx) && idx >= 0 ? idx : 0;
+  if (Array.isArray(ids) && ids.length) {
+    const next = ids.map((id) => byId[id]).filter(Boolean);
+    if (next.length) {
+      state.tracks = next;
+      state.order = next.map((_, i) => i);
+    }
+    const idx = yt.getPlaylistIndex?.();
+    if (Number.isInteger(idx) && idx >= 0 && idx < state.order.length) state.pos = idx;
+  } else {
+    const vid = yt.getVideoData?.()?.video_id;
+    const trackIdx = state.tracks.findIndex((t) => t.id === vid);
+    if (trackIdx >= 0) {
+      const orderIdx = state.order.indexOf(trackIdx);
+      state.pos = orderIdx >= 0 ? orderIdx : trackIdx;
+    }
+  }
   hydrateCurrentFromPlayer();
   renderList();
   renderTrack();
@@ -410,8 +458,14 @@ function go(newPos) {
   renderTrack();
   if (!yt) return;
   state.started = true;
-  if (typeof yt.playVideoAt === 'function') yt.playVideoAt(state.pos);
-  else if (currentTrack()) yt.loadVideoById(currentTrack().id);
+  const ids = videoIdsInPlayOrder();
+  if (ids.length && playerMatchesStation() && typeof yt.playVideoAt === 'function') {
+    yt.playVideoAt(state.pos);
+  } else if (ids.length) {
+    yt.loadPlaylist(ids, state.pos);
+  } else if (currentTrack()) {
+    yt.loadVideoById(currentTrack().id);
+  }
 }
 
 function toggle() {
@@ -562,7 +616,7 @@ window.onYouTubeIframeAPIReady = () => {
       },
       onError: (e) => {
         console.warn("YouTube player error:", e.data);
-        if (state.started && typeof yt.nextVideo === 'function') {
+        if (state.started && playerMatchesStation() && typeof yt.nextVideo === 'function') {
           setTimeout(() => yt.nextVideo(), 800);
         }
       }
@@ -630,7 +684,13 @@ function markActiveStation(genreId) {
 async function switchGenre(genreId, autoPlay = true) {
   const station = STATIONS[genreId];
   if (!station) return;
+  if (genreId === currentGenre && state.tracks.length && autoPlay && yt && state.ready) {
+    cueOrLoadStationPlaylist(true);
+    if (el.genrePanel.classList.contains('is-open')) toggleGenrePanel();
+    return;
+  }
 
+  const epoch = ++state.epoch;
   currentGenre = genreId;
   document.body.className = "genre--" + genreId;
 
@@ -644,8 +704,11 @@ async function switchGenre(genreId, autoPlay = true) {
   markActiveStation(genreId);
 
   state.pos = 0;
-  await loadTracksForStation(station);
+  applyTracks([]);
+  await loadTracksForStation(station, epoch);
+  if (epoch !== state.epoch) return;
   startWallpaperRotation(await loadWallpapers(station));
+  if (epoch !== state.epoch) return;
   cycleSlogans(station.slogans);
 
   if (yt && state.ready) cueOrLoadStationPlaylist(autoPlay);
@@ -869,16 +932,24 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   el.shuffle.addEventListener('click', () => {
+    const keep = currentTrack();
     state.shuffle = !state.shuffle;
     el.shuffle.classList.toggle('active', state.shuffle);
     el.shuffle.setAttribute('aria-pressed', String(state.shuffle));
-    try { yt?.setShuffle?.(state.shuffle); } catch (_) {}
-    if (yt && state.ready) setTimeout(syncFromPlayer, 250);
-    else {
-      state.order = buildOrder();
-      state.pos = 0;
-      renderList();
-      renderTrack();
+    state.order = buildOrder();
+    if (keep) {
+      const idx = state.order.findIndex((i) => state.tracks[i] && state.tracks[i].id === keep.id);
+      state.pos = Math.max(0, idx);
+    }
+    renderList();
+    renderTrack();
+    if (yt && state.ready) {
+      const ids = videoIdsInPlayOrder();
+      if (!ids.length) return;
+      try {
+        if (state.started) yt.loadPlaylist(ids, state.pos);
+        else yt.cuePlaylist(ids, state.pos);
+      } catch (_) {}
     }
   });
 
