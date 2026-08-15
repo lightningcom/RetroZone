@@ -172,17 +172,17 @@ a {
   pointer-events: none;
 }
 
-/* Hidden YouTube Host Iframe (Parked off-screen) */
+/* YouTube audio host — stay in-viewport so mobile does not treat it as offscreen */
 .yt-host {
   position: fixed;
-  top: 0;
   left: 0;
-  width: 1px;
-  height: 1px;
+  bottom: 0;
+  width: 2px;
+  height: 2px;
   overflow: hidden;
-  opacity: 0;
+  opacity: 0.02;
   pointer-events: none;
-  z-index: -10;
+  z-index: 1;
 }
 
 /* ─── Topbar (Completely Clean & Floating) ─────── */
