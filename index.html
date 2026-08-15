@@ -177,7 +177,7 @@
 
       <!-- Playback Controls -->
       <div class="controls">
-        <button class="btn" id="shuffle-btn" type="button" title="शफ़ल (Shuffle)" aria-label="Shuffle" aria-pressed="true">
+        <button class="btn active" id="shuffle-btn" type="button" title="शफ़ल (Shuffle)" aria-label="Shuffle" aria-pressed="true">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>
         </button>
         
@@ -194,7 +194,7 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 4l10 8-10 8V4z"/><line x1="19" y1="5" x2="19" y2="19"/></svg>
         </button>
 
-        <button class="btn" id="list-btn" type="button" title="प्लेलिस्ट (Playlist)" aria-label="Toggle playlist" aria-expanded="false">
+        <button class="btn" id="list-btn" type="button" title="प्लेलिस्ट (Playlist)" aria-label="Toggle playlist" aria-expanded="false" aria-controls="playlist-panel">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1.2" fill="currentColor"/><circle cx="3" cy="12" r="1.2" fill="currentColor"/><circle cx="3" cy="18" r="1.2" fill="currentColor"/></svg>
         </button>
 
@@ -208,7 +208,6 @@
 
   </div><!-- /.dock -->
 
-  <script src="https://www.youtube.com/iframe_api"></script>
   <script src="app.js"></script>
 </body>
 </html>

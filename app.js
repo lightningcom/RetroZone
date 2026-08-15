@@ -292,19 +292,39 @@ function renderTrack() {
 }
 
 function renderList() {
-  el.listItems.innerHTML = '';
+  el.listItems.replaceChildren();
+  if (!state.order.length) {
+    const empty = document.createElement('li');
+    empty.className = 'list__item list__empty';
+    empty.textContent = 'प्लेलिस्ट लोड नहीं हो सकी';
+    el.listItems.appendChild(empty);
+    return;
+  }
   state.order.forEach((trackIdx, i) => {
     const t = state.tracks[trackIdx];
+    if (!t) return;
     const li = document.createElement('li');
     li.className = 'list__item' + (i === state.pos ? ' active' : '');
-    li.innerHTML = `
-      <span class="item-num">${i + 1}</span>
-      <div class="item-info">
-        <span class="item-title">${t.title}</span>
-        <span class="item-artist">${t.artist}</span>
-      </div>
-      <span class="item-dur">${fmtTime(t.duration)}</span>
-    `;
+
+    const num = document.createElement('span');
+    num.className = 'item-num';
+    num.textContent = String(i + 1);
+
+    const info = document.createElement('div');
+    info.className = 'item-info';
+    const title = document.createElement('span');
+    title.className = 'item-title';
+    title.textContent = t.title || '';
+    const artist = document.createElement('span');
+    artist.className = 'item-artist';
+    artist.textContent = t.artist || '';
+    info.append(title, artist);
+
+    const dur = document.createElement('span');
+    dur.className = 'item-dur';
+    dur.textContent = fmtTime(t.duration);
+
+    li.append(num, info, dur);
     li.addEventListener('click', () => {
       ensureAudio();
       go(i);
@@ -429,7 +449,35 @@ function preferAudio() {
   } catch (_) {}
 }
 
+let ytBooted = false;
+
+async function loadStationPlaylists() {
+  try {
+    const res = await fetch('stations_tracks.json', { cache: 'no-store' });
+    if (!res.ok) throw new Error(`playlist HTTP ${res.status}`);
+    const db = await res.json();
+    Object.keys(STATIONS).forEach((id) => {
+      const tracks = db[id];
+      if (Array.isArray(tracks) && tracks.length) STATIONS[id].tracks = tracks;
+    });
+  } catch (err) {
+    console.warn('Using embedded playlists:', err);
+  }
+}
+
+function loadYouTubeApi() {
+  if (window.YT && typeof window.YT.Player === 'function') {
+    window.onYouTubeIframeAPIReady();
+    return;
+  }
+  const s = document.createElement('script');
+  s.src = 'https://www.youtube.com/iframe_api';
+  document.head.append(s);
+}
+
 window.onYouTubeIframeAPIReady = () => {
+  if (ytBooted) return;
+  ytBooted = true;
   const firstTrack = currentTrack();
   yt = new YT.Player('yt-player', {
     height: '1',
@@ -662,6 +710,7 @@ function tickClock() {
 function togglePlaylist() {
   const open = !el.list.classList.contains('is-open');
   el.list.classList.toggle('is-open', open);
+  el.list.setAttribute('aria-hidden', String(!open));
   el.listBtn.classList.toggle('active', open);
   el.listBtn.setAttribute('aria-expanded', String(open));
   if (open && el.genrePanel.classList.contains('is-open')) toggleGenrePanel();
@@ -678,19 +727,16 @@ function toggleGenrePanel() {
 // ------------------------------------------------------------
 // 15. INITIALIZATION
 // ------------------------------------------------------------
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   tickClock();
   setInterval(tickClock, 10000);
   fetchWeather();
 
-  // Load initial highway station
-  state.tracks = STATIONS.highway.tracks;
-  state.order = buildOrder();
-  state.pos = 0;
-  renderList();
-  renderTrack();
-  startWallpaperRotation(STATIONS.highway.wallpapers);
-  cycleSlogans(STATIONS.highway.slogans);
+  await loadStationPlaylists();
+  switchGenre("highway", false);
+  el.shuffle.classList.toggle('active', state.shuffle);
+  el.shuffle.setAttribute('aria-pressed', String(state.shuffle));
+  loadYouTubeApi();
 
   // Bind controls
   el.play.addEventListener('click', toggle);
