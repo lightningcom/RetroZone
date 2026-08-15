@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>हॉर्न ओके प्लीज — हिंदी हाईवे रेडियो</title>
+  <meta name="description" content="हिंदी हाईवे रेडियो — सफर में साथी, 90s, ढाबा सूफ़ियाना, २०००s डांस, एंटी-डिप्रेशन" />
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Yatra+One&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="genre--highway">
+
+  <!-- Background crossfade layers -->
+  <div class="bg" aria-hidden="true">
+    <div class="bg__layer bg__layer--1 is-active"></div>
+    <div class="bg__layer bg__layer--2"></div>
+    <div class="bg__scrim"></div>
+  </div>
+
+  <!-- Hidden YouTube Audio Engine iframe — parked off-screen -->
+  <div class="yt-host" aria-hidden="true">
+    <div id="yt-player"></div>
+  </div>
+
+  <!-- ── Top bar: Clock, Live & Weather, YouTube link ─────────── -->
+  <header class="topbar">
+    <div class="clock" id="clock" aria-label="Current time">--:--</div>
+
+    <div class="presence">
+      <div class="presence__dot"></div>
+      <span class="presence__text" id="presence-text">ऑन द हाईवे</span>
+      <div class="weather-badge" id="weather-badge">
+        <span class="weather-icon" id="weather-icon">⛅</span>
+        <span class="weather-temp" id="weather-temp">--°C</span>
+        <span class="weather-city" id="weather-city">दिल्ली</span>
+      </div>
+    </div>
+
+    <div class="links">
+      <a id="yt-link" class="link yt-link-badge" href="https://www.youtube.com/playlist?list=PLfH-6xXh3waM_xq9ycX40mT8DItNVg7bM" target="_blank" rel="noopener" title="YouTube Playlist खोलें">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg>
+        <span>Playlist</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- ── Main Wordmark & Bumper Slogan ────────────────────────── -->
+  <main class="main">
+
+    <div class="logo" id="logo">
+      <span class="logo__line logo__l1" id="logo-line1">हाईवे</span>
+      <span class="logo__line logo__l2" id="logo-line2">वाला रेडियो</span>
+    </div>
+
+    <!-- Bumper Sticker Slogan -->
+    <div class="bumper" id="bumper">
+      <span class="bumper__text" id="bumper-text">सफर खूबसूरत है मंजिल से भी</span>
+      <button class="bumper__next" id="bumper-next" aria-label="अगला स्लोगन" title="अगला स्लोगन">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+      </button>
+    </div>
+
+  </main>
+
+  <!-- ── Horn Button: Left Floating Capsule ───────────────────── -->
+  <aside class="horns">
+    <button class="horn-btn" id="horn-btn" title="हॉर्न बजाएं" type="button">
+      <div class="horn__icon">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 9v6h4l5 5V4L8 9H4zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+      </div>
+      <div class="horn__text">
+        <span class="horn__deva">हॉर्न ओके प्लीज</span>
+        <span class="horn__en">Horn ok please</span>
+      </div>
+    </button>
+  </aside>
+
+  <!-- ── Dock: Stations Panel + Playlist Drawer + Player Pill ─── -->
+  <div class="dock">
+
+    <!-- Stations Panel (Collapsible slide-up) -->
+    <div class="genre-panel" id="genre-panel" aria-hidden="true">
+      <div class="genre-panel__header">
+        <span class="genre-panel__title">📻 स्टेशन चुनें</span>
+        <span class="genre-panel__hint">अपना पसंदीदा चैनल सेट करें</span>
+      </div>
+      <div class="genre-panel__grid">
+        <button class="genre-btn active" data-genre="highway" type="button">
+          <span class="gb-icon">🚛</span>
+          <div class="gb-info">
+            <span class="gb-label">ऑन द हाईवे</span>
+            <span class="gb-fm">FM 98.4 • 90s Bangers</span>
+          </div>
+        </button>
+        <button class="genre-btn" data-genre="dhaba" type="button">
+          <span class="gb-icon">❄️</span>
+          <div class="gb-info">
+            <span class="gb-label">ढाबा सूफ़ियाना</span>
+            <span class="gb-fm">FM 91.1 • Sufi & Qawwali</span>
+          </div>
+        </button>
+        <button class="genre-btn" data-genre="dance2000" type="button">
+          <span class="gb-icon">💿</span>
+          <div class="gb-info">
+            <span class="gb-label">२०००s डांस धमाका</span>
+            <span class="gb-fm">FM 102.5 • Party Hits</span>
+          </div>
+        </button>
+        <button class="genre-btn" data-genre="retro90s" type="button">
+          <span class="gb-icon">📼</span>
+          <div class="gb-info">
+            <span class="gb-label">९०s नॉस्टैल्जिया</span>
+            <span class="gb-fm">FM 88.0 • Golden Melodies</span>
+          </div>
+        </button>
+        <button class="genre-btn" data-genre="antidepression" type="button">
+          <span class="gb-icon">🌿</span>
+          <div class="gb-info">
+            <span class="gb-label">एंटी-डिप्रेशन</span>
+            <span class="gb-fm">FM 94.3 • Soul Healing</span>
+          </div>
+        </button>
+        <button class="genre-btn" data-genre="fredagain" type="button">
+          <span class="gb-icon">⚡</span>
+          <div class="gb-info">
+            <span class="gb-label">फ्रेड अगेन...</span>
+            <span class="gb-fm">FM 106.8 • Electronic</span>
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <!-- Playlist Drawer (Collapsible slide-up) -->
+    <div class="list" id="playlist-panel" aria-hidden="true">
+      <div class="list__header">
+        <span class="list__title" id="list-title">प्लेलिस्ट — ऑन द हाईवे</span>
+        <a id="list-yt-link" class="list__yt-link" href="#" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg>
+          YouTube प्लेलिस्ट
+        </a>
+      </div>
+      <ul class="list__items" id="track-list"></ul>
+    </div>
+
+    <!-- Floating Glass Player Pill -->
+    <div class="player" id="player-pill">
+
+      <!-- Vinyl Disc Artwork -->
+      <div class="disc" id="disc">
+        <div class="disc__ring">
+          <img class="disc__art" id="disc-img" src="" alt="Album Art" />
+        </div>
+        <div class="disc__hub"></div>
+      </div>
+
+      <!-- Track Metadata & 60fps Seek Bar -->
+      <div class="meta">
+        <p class="meta__title" id="track-title">लोड हो रहा है...</p>
+        <p class="meta__artist" id="track-artist">ऑन द हाईवे</p>
+        
+        <div class="seek" id="seek-bar" role="slider" aria-label="Seek track" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">
+          <div class="seek__rail">
+            <div class="seek__fill" id="seek-fill"></div>
+          </div>
+          <div class="seek__knob" id="seek-knob"></div>
+        </div>
+
+        <div class="time">
+          <span id="time-cur">0:00</span>
+          <span class="time-sep">/</span>
+          <span id="time-tot">0:00</span>
+        </div>
+      </div>
+
+      <!-- Playback Controls -->
+      <div class="controls">
+        <button class="btn" id="shuffle-btn" type="button" title="शफ़ल (Shuffle)" aria-label="Shuffle" aria-pressed="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>
+        </button>
+        
+        <button class="btn" id="prev-btn" type="button" title="पिछला (Previous)" aria-label="Previous track">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 20 9 12l10-8v16z"/><line x1="5" y1="19" x2="5" y2="5"/></svg>
+        </button>
+
+        <button class="btn btn--play" id="play-btn" type="button" title="चलाएं / रोकें" aria-label="Play">
+          <svg class="icon-play" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+          <svg class="icon-pause" viewBox="0 0 24 24" fill="currentColor" style="display:none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+        </button>
+
+        <button class="btn" id="next-btn" type="button" title="अगला (Next)" aria-label="Next track">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 4l10 8-10 8V4z"/><line x1="19" y1="5" x2="19" y2="19"/></svg>
+        </button>
+
+        <button class="btn" id="list-btn" type="button" title="प्लेलिस्ट (Playlist)" aria-label="Toggle playlist" aria-expanded="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1.2" fill="currentColor"/><circle cx="3" cy="12" r="1.2" fill="currentColor"/><circle cx="3" cy="18" r="1.2" fill="currentColor"/></svg>
+        </button>
+
+        <!-- Stations toggle button -->
+        <button class="btn btn--stations" id="stations-btn" type="button" title="स्टेशन बदलें (Stations)" aria-label="Select Station" aria-expanded="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4.93 4.93a10 10 0 0 1 14.14 0M7.76 7.76a6 6 0 0 1 8.48 0M10.6 10.6a2 2 0 0 1 2.8 0"/><circle cx="12" cy="14" r="2" fill="currentColor"/><line x1="12" y1="16" x2="12" y2="22"/></svg>
+        </button>
+      </div>
+
+    </div><!-- /.player -->
+
+  </div><!-- /.dock -->
+
+  <script src="https://www.youtube.com/iframe_api"></script>
+  <script src="app.js"></script>
+</body>
+</html>

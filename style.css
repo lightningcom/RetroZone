@@ -1,0 +1,962 @@
+/* ============================================================
+   हॉर्न ओके प्लीज — CSS
+   Strict hornokplease.xyz aesthetic + Responsive Mobile + Multi-station
+   ============================================================ */
+
+:root {
+  --logo-size: clamp(3rem, 11vw, 7.5rem);
+  --edge: clamp(0.9rem, 2.4vw, 1.8rem);
+  
+  --glass: rgba(255, 255, 255, 0.09);
+  --glass-hi: rgba(255, 255, 255, 0.16);
+  --glass-line: rgba(255, 255, 255, 0.22);
+  --glass-blur: blur(28px) saturate(150%);
+  --shadow-glass: 0 8px 40px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  --text-shadow: 0 1px 8px rgba(0, 0, 0, 0.6);
+
+  --gold: #ffb703;
+  --green: #4ade80;
+
+  --body: "Baloo 2", "Kohinoor Devanagari", "Nirmala UI", "Noto Sans Devanagari", ui-rounded, sans-serif;
+  --ui: ui-sans-serif, -apple-system, "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+
+  --swift: 140ms cubic-bezier(0.4, 0, 0.2, 1);
+  --glide: 320ms cubic-bezier(0.4, 0, 0.2, 1);
+  --settle: 620ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ─── Reset & Base ─────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: var(--body);
+  color: #fff;
+  background: #080f10;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  user-select: none;
+  position: fixed;
+  inset: 0;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: inherit;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* ─── Background Crossfade Layers ─────────────── */
+.bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-color: #080f10;
+}
+
+.bg__layer {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0;
+  transition: opacity 1.2s var(--settle);
+}
+
+.bg__layer.is-active {
+  opacity: 1;
+}
+
+/* Fallback gradient layers per genre */
+.genre--highway .bg {
+  background-image: radial-gradient(ellipse at 20% 80%, rgba(255,140,0,0.22) 0%, transparent 50%),
+                    linear-gradient(160deg, #050b12 0%, #0e1724 45%, #180f00 80%, #07090b 100%);
+}
+.genre--dhaba .bg {
+  background-image: radial-gradient(ellipse at 50% 100%, rgba(255,130,30,0.30) 0%, transparent 55%),
+                    linear-gradient(to bottom, #060e18 0%, #101924 35%, #24170d 75%, #080503 100%);
+}
+.genre--dance2000 .bg {
+  background-image: radial-gradient(ellipse at 30% 80%, rgba(200,0,255,0.26) 0%, transparent 50%),
+                    linear-gradient(135deg, #090012 0%, #170030 45%, #080014 100%);
+}
+.genre--retro90s .bg {
+  background-image: radial-gradient(ellipse at 50% 100%, rgba(255,50,120,0.28) 0%, transparent 50%),
+                    linear-gradient(to bottom, #0e0614 0%, #200f24 45%, #0a050e 100%);
+}
+.genre--antidepression .bg {
+  background-image: radial-gradient(ellipse at 50% 70%, rgba(30,200,130,0.24) 0%, transparent 55%),
+                    linear-gradient(160deg, #040d08 0%, #0a1b14 45%, #040906 100%);
+}
+.genre--fredagain .bg {
+  background-image: radial-gradient(ellipse at 35% 90%, rgba(0,220,255,0.28) 0%, transparent 50%),
+                    linear-gradient(to bottom, #050512 0%, #0d0d26 40%, #060610 100%);
+}
+
+.bg__scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.28) 0%,
+    rgba(0, 0, 0, 0.05) 24%,
+    rgba(0, 0, 0, 0.08) 58%,
+    rgba(0, 0, 0, 0.55) 100%
+  );
+  pointer-events: none;
+}
+
+/* Hidden YouTube Host Iframe (Parked off-screen) */
+.yt-host {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  z-index: -10;
+}
+
+/* ─── Topbar (Completely Clean & Floating) ─────── */
+.topbar {
+  position: fixed;
+  top: max(1rem, env(safe-area-inset-top));
+  left: var(--edge);
+  right: var(--edge);
+  z-index: 100;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 0.75rem;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  text-shadow: var(--text-shadow);
+}
+
+.clock {
+  justify-self: start;
+  font-family: var(--ui);
+  font-size: 0.84rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.presence {
+  justify-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-family: var(--ui);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.presence__dot {
+  position: relative;
+  width: 9px;
+  height: 9px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 8px rgba(74, 222, 128, 0.9);
+}
+
+.presence__dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--green);
+  opacity: 0.75;
+  animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes ping {
+  75%, 100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+.weather-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  padding: 0.2rem 0.55rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.weather-temp {
+  color: var(--gold);
+  font-weight: 700;
+}
+
+.weather-city {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.links {
+  justify-self: end;
+  display: flex;
+  align-items: center;
+}
+
+.yt-link-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.28rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  font-family: var(--ui);
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.75);
+  transition: all var(--swift);
+}
+
+.yt-link-badge:hover {
+  background: rgba(230, 57, 70, 0.22);
+  border-color: rgba(230, 57, 70, 0.45);
+  color: #ff6b75;
+}
+
+/* ─── Main Content ─────────────────────────────── */
+main.main {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: max(1.2rem, env(safe-area-inset-top)) var(--edge) max(120px, env(safe-area-inset-bottom));
+  gap: 1.2rem;
+  pointer-events: none;
+}
+
+/* Central Truck Art Wordmark */
+.logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  line-height: 0.88;
+  pointer-events: auto;
+  user-select: none;
+}
+
+.logo__l1 {
+  font-family: 'Yatra One', 'Noto Sans Devanagari', sans-serif;
+  display: block;
+  font-size: var(--logo-size);
+  color: #ffffff;
+  text-shadow: 0 0 80px rgba(255,183,3,0.38), 0 6px 36px rgba(0,0,0,0.95);
+  letter-spacing: -1px;
+}
+
+.logo__l2 {
+  font-family: 'Yatra One', 'Noto Sans Devanagari', sans-serif;
+  display: block;
+  font-size: calc(var(--logo-size) * 0.38);
+  color: rgba(255,255,255,0.72);
+  margin-top: 0.15em;
+  letter-spacing: -0.5px;
+  text-shadow: 0 4px 20px rgba(0,0,0,0.9);
+}
+
+@keyframes truck-shake {
+  0%   { transform: translate3d(0, 0, 0) rotate(0deg); }
+  8%   { transform: translate3d(-5px, 2px, 0) rotate(-1.2deg); }
+  18%  { transform: translate3d(5px, -2px, 0) rotate(1deg); }
+  28%  { transform: translate3d(-4px, 1px, 0) rotate(-0.8deg); }
+  38%  { transform: translate3d(4px, -1px, 0) rotate(0.6deg); }
+  50%  { transform: translate3d(-2px, 1px, 0) rotate(-0.4deg); }
+  62%  { transform: translate3d(2px, 0, 0) rotate(0.3deg); }
+  74%  { transform: translate3d(-1px, 0, 0) rotate(-0.15deg); }
+  86%  { transform: translate3d(1px, 0, 0) rotate(0.08deg); }
+  100% { transform: none; }
+}
+
+.logo.is-shaking .logo__line {
+  animation: truck-shake 720ms cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+/* Bumper Sticker Slogan */
+.bumper {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.3rem 0.5rem;
+  width: min(840px, 94vw);
+  pointer-events: auto;
+}
+
+.bumper__text {
+  font-family: 'Yatra One', 'Noto Sans Devanagari', sans-serif;
+  font-size: clamp(0.95rem, 2.6vw, 1.25rem);
+  background: linear-gradient(90deg,
+    rgba(255,255,255,0.96) 0%,
+    rgba(255,225,130,0.92) 50%,
+    rgba(255,255,255,0.85) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-align: center;
+  flex: 1;
+  line-height: 1.4;
+  word-break: keep-all;
+  filter: drop-shadow(0 0 20px rgba(255,200,80,0.32));
+  transition: opacity 0.28s ease, transform 0.28s ease;
+}
+
+.bumper__text.is-swapping {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+.bumper__next {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.16);
+  color: rgba(255,255,255,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all var(--swift);
+}
+
+.bumper__next:hover {
+  background: rgba(255,255,255,0.2);
+  color: #fff;
+  transform: rotate(45deg);
+}
+
+/* ─── Horn Capsule Button ─────────────────────── */
+.horns {
+  position: fixed;
+  left: var(--edge);
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 50;
+}
+
+.horn-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.8rem 0.35rem 0.4rem;
+  border: 1px solid var(--glass-line);
+  border-radius: 999px;
+  background: var(--glass);
+  backdrop-filter: blur(22px) saturate(160%);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  color: #fff;
+  cursor: pointer;
+  transition: background var(--swift), transform var(--swift), border-color var(--swift);
+}
+
+.horn-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.45);
+  transform: scale(1.04);
+}
+
+.horn-btn:active,
+.horn-btn.is-blaring {
+  transform: scale(0.95);
+}
+
+.horn__icon {
+  display: grid;
+  place-items: center;
+  width: 1.7rem;
+  height: 1.7rem;
+  flex: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+}
+
+.horn__icon svg {
+  width: 15px;
+  height: 15px;
+}
+
+.horn-btn.is-blaring .horn__icon {
+  background: #fff;
+  color: #111;
+}
+
+.horn__text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+  text-align: left;
+}
+
+.horn__deva {
+  font-family: 'Yatra One', 'Noto Sans Devanagari', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.horn__en {
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* ─── Dock ────────────────────────────────────── */
+.dock {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 150;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: max(0.8rem, env(safe-area-inset-bottom));
+  pointer-events: none;
+}
+
+/* ─── Stations Panel ──────────────────────────── */
+.genre-panel {
+  width: min(680px, calc(100vw - 1.8rem));
+  background: rgba(8, 15, 17, 0.94);
+  backdrop-filter: blur(36px) saturate(160%);
+  -webkit-backdrop-filter: blur(36px) saturate(160%);
+  border: 1px solid var(--glass-line);
+  border-radius: 20px 20px 0 0;
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 0.4s var(--settle), opacity 0.3s ease;
+  pointer-events: none;
+  box-shadow: 0 -8px 36px rgba(0, 0, 0, 0.6);
+}
+
+.genre-panel.is-open {
+  max-height: 380px;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.genre-panel__header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  padding: 0.8rem 1.2rem 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.genre-panel__title {
+  font-family: 'Yatra One', 'Noto Sans Devanagari', sans-serif;
+  font-size: 0.98rem;
+  color: var(--gold);
+}
+
+.genre-panel__hint {
+  font-size: 0.76rem;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.genre-panel__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  padding: 0.75rem 1rem 1rem;
+}
+
+.genre-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.65rem 0.85rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-align: left;
+  transition: all var(--swift);
+}
+
+.genre-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+.genre-btn.active {
+  background: rgba(255, 183, 3, 0.16);
+  border-color: rgba(255, 183, 3, 0.5);
+  color: var(--gold);
+  box-shadow: 0 0 20px rgba(255, 183, 3, 0.12), inset 0 1px 0 rgba(255, 183, 3, 0.12);
+}
+
+.gb-icon {
+  font-size: 1.3rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.gb-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  overflow: hidden;
+}
+
+.gb-label {
+  font-family: 'Yatra One', 'Noto Sans Devanagari', sans-serif;
+  font-size: 0.86rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gb-fm {
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.45);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.genre-btn.active .gb-fm {
+  color: rgba(255, 183, 3, 0.8);
+}
+
+/* ─── Playlist Drawer ─────────────────────────── */
+.list {
+  width: min(680px, calc(100vw - 1.8rem));
+  background: rgba(8, 15, 17, 0.94);
+  backdrop-filter: blur(36px) saturate(160%);
+  -webkit-backdrop-filter: blur(36px) saturate(160%);
+  border: 1px solid var(--glass-line);
+  border-radius: 20px 20px 0 0;
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 0.4s var(--settle), opacity 0.3s ease;
+  pointer-events: none;
+  box-shadow: 0 -8px 36px rgba(0, 0, 0, 0.6);
+}
+
+.list.is-open {
+  max-height: 46vh;
+  opacity: 1;
+  pointer-events: auto;
+  overflow-y: auto;
+}
+
+.list::-webkit-scrollbar { width: 4px; }
+.list::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 4px; }
+
+.list__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.8rem 1.2rem 0.6rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  position: sticky;
+  top: 0;
+  background: rgba(8, 15, 17, 0.98);
+  z-index: 5;
+}
+
+.list__title {
+  font-family: 'Yatra One', 'Noto Sans Devanagari', sans-serif;
+  font-size: 0.94rem;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.list__yt-link {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.76rem;
+  color: rgba(255, 255, 255, 0.45);
+  transition: color var(--swift);
+}
+
+.list__yt-link:hover {
+  color: #ff6b75;
+}
+
+.list__items {
+  list-style: none;
+}
+
+.list__item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 1.2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+  transition: background var(--swift);
+}
+
+.list__item:last-child {
+  border-bottom: none;
+}
+
+.list__item:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.list__item.active {
+  background: rgba(255, 183, 3, 0.14);
+}
+
+.list__item.active .item-title {
+  color: var(--gold);
+}
+
+.item-num {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.4);
+  width: 22px;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.item-info {
+  flex: 1;
+  overflow: hidden;
+}
+
+.item-title {
+  font-family: 'Yatra One', 'Noto Sans Devanagari', sans-serif;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+.item-artist {
+  font-size: 0.76rem;
+  color: rgba(255, 255, 255, 0.45);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  margin-top: 0.1rem;
+}
+
+.item-dur {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.45);
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── Floating Player Pill ────────────────────── */
+.player {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.45rem 0.9rem 0.45rem 0.45rem;
+  width: min(680px, calc(100vw - 1.8rem));
+  background: var(--glass);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-line);
+  border-radius: 999px;
+  box-shadow: var(--shadow-glass);
+  margin-top: 0.4rem;
+  pointer-events: auto;
+}
+
+/* Vinyl Disc */
+.disc {
+  position: relative;
+  width: 3.25rem;
+  height: 3.25rem;
+  flex: none;
+  transition: transform var(--glide);
+}
+
+.player.is-playing .disc {
+  transform: scale(1.04);
+}
+
+.disc__ring {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+  outline: 1px solid rgba(255, 255, 255, 0.25);
+  outline-offset: -1px;
+  background: #151515;
+  animation: spin 8s linear infinite;
+  animation-play-state: paused;
+}
+
+.player.is-playing .disc__ring {
+  animation-play-state: running;
+}
+
+.disc__art {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.disc__hub {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0.55rem;
+  height: 0.55rem;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.75);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.45);
+  pointer-events: none;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Meta & 60fps Seek Bar */
+.meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.meta__title {
+  margin: 0;
+  font-family: 'Yatra One', 'Noto Sans Devanagari', sans-serif;
+  font-weight: 700;
+  font-size: 0.88rem;
+  line-height: 1.25;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #fff;
+  transition: opacity 200ms ease;
+}
+
+.meta__artist {
+  margin: 0;
+  font-size: 0.74rem;
+  font-weight: 600;
+  line-height: 1.25;
+  color: rgba(255, 255, 255, 0.65);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: opacity 200ms ease;
+}
+
+.player.is-swapping .meta__title,
+.player.is-swapping .meta__artist {
+  opacity: 0;
+}
+
+.seek {
+  position: relative;
+  height: 10px;
+  margin-top: 0.2rem;
+  cursor: pointer;
+  touch-action: none;
+}
+
+.seek__rail {
+  position: absolute;
+  inset-inline: 0;
+  top: 50%;
+  height: 3px;
+  transform: translateY(-50%);
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.seek__fill {
+  height: 100%;
+  width: 100%;
+  border-radius: 999px;
+  background: var(--gold);
+  transform: scaleX(0);
+  transform-origin: left center;
+  will-change: transform;
+}
+
+.seek__knob {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 10px;
+  height: 10px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  transition: opacity var(--swift);
+  will-change: transform;
+  pointer-events: none;
+}
+
+.seek:hover .seek__knob,
+.seek:focus-visible .seek__knob {
+  opacity: 1;
+}
+
+.time {
+  margin-top: 0.05rem;
+  font-size: 0.64rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: rgba(255, 255, 255, 0.55);
+}
+.time-sep { opacity: 0.4; }
+
+/* Controls */
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  flex: none;
+}
+
+.btn {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  color: rgba(255, 255, 255, 0.8);
+  transition: all var(--swift);
+}
+
+.btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+}
+
+.btn:active {
+  transform: scale(0.92);
+}
+
+.btn--play {
+  width: 2.5rem;
+  height: 2.5rem;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid var(--glass-line);
+  color: #fff;
+}
+
+.btn--play svg {
+  width: 20px;
+  height: 20px;
+}
+
+.btn--play:hover {
+  background: rgba(255, 183, 3, 0.3);
+  border-color: rgba(255, 183, 3, 0.6);
+}
+
+.btn.active {
+  color: var(--gold);
+}
+
+.btn--stations {
+  background: rgba(255, 183, 3, 0.08);
+  border: 1px solid rgba(255, 183, 3, 0.2);
+  color: rgba(255, 183, 3, 0.8);
+}
+
+.btn--stations:hover {
+  background: rgba(255, 183, 3, 0.22);
+  border-color: rgba(255, 183, 3, 0.5);
+  color: var(--gold);
+}
+
+.btn--stations.active {
+  background: rgba(255, 183, 3, 0.26);
+  border-color: rgba(255, 183, 3, 0.65);
+  color: var(--gold);
+  box-shadow: 0 0 14px rgba(255, 183, 3, 0.25);
+}
+
+/* ─── Responsive Media Queries ────────────────── */
+@media (max-width: 680px) {
+  .weather-city { display: none; }
+  .presence__text { display: none; }
+  .horns { left: 0.6rem; }
+  .horn-btn { padding: 0.3rem 0.65rem 0.3rem 0.35rem; }
+  .horn__deva { font-size: 0.74rem; }
+  .genre-panel__grid { grid-template-columns: repeat(2, 1fr); }
+  .gb-label { font-size: 0.78rem; }
+}
+
+@media (max-width: 480px) {
+  .genre-panel__grid { grid-template-columns: 1fr 1fr; gap: 0.35rem; padding: 0.5rem; }
+  .genre-btn { padding: 0.5rem 0.6rem; }
+  .gb-icon { font-size: 1.1rem; }
+  .gb-fm { display: none; }
+  .player { gap: 0.5rem; padding: 0.35rem 0.6rem 0.35rem 0.35rem; }
+  .disc { width: 2.8rem; height: 2.8rem; }
+  .btn { width: 1.75rem; height: 1.75rem; }
+  .btn svg { width: 14px; height: 14px; }
+  .btn--play { width: 2.2rem; height: 2.2rem; }
+  .btn--play svg { width: 17px; height: 17px; }
+}
