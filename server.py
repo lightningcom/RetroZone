@@ -7,7 +7,6 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-PORT = 3000
 DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 PLAYLIST_ID_RE = re.compile(r"^[A-Za-z0-9_-]{10,128}$")
 YT_CTX = {
@@ -18,6 +17,37 @@ YT_CTX = {
         "gl": "IN",
     }
 }
+ALLOWED_PLAYLIST_IDS = {
+    "PLfH-6xXh3waM",  # highway / truck
+    "PLDd3GFEUXVbA",  # dhaba
+    "PLPo3EhjC8W4A",  # dance 2000s
+    "PLEFafAVNRJBo",  # retro 90s
+    "PLANlPz-KKq6k",  # anti-depression
+    "PLZIT0z5Rfu98",  # fred again
+}
+
+
+def load_dotenv(path):
+    if not os.path.isfile(path):
+        return
+    with open(path, encoding="utf-8") as handle:
+        for raw in handle:
+            line = raw.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, value = line.split("=", 1)
+            key = key.strip()
+            value = value.strip().strip("'").strip('"')
+            os.environ.setdefault(key, value)
+
+
+load_dotenv(os.path.join(DIRECTORY, ".env"))
+
+PORT = int(os.environ.get("PORT", "3000"))
+OWM_API_KEY = os.environ.get("OWM_API_KEY", "").strip()
+WEATHER_LAT = os.environ.get("WEATHER_LAT", "28.6139")
+WEATHER_LON = os.environ.get("WEATHER_LON", "77.2090")
+WEATHER_CITY = os.environ.get("WEATHER_CITY", "दिल्ली")
 
 
 def _innertube(endpoint, payload):
@@ -151,7 +181,6 @@ def _playlist_title(data):
 def fetch_youtube_playlist(playlist_id):
     tracks = []
     seen = set()
-    tokens = []
 
     def absorb(batch):
         for track in batch:
@@ -179,7 +208,24 @@ def fetch_youtube_playlist(playlist_id):
     return {"id": playlist_id, "title": title, "tracks": tracks}
 
 
-class HornOkPleaseHandler(http.server.SimpleHTTPRequestHandler):
+def fetch_weather():
+    if not OWM_API_KEY:
+        return None
+    params = urllib.parse.urlencode(
+        {
+            "lat": WEATHER_LAT,
+            "lon": WEATHER_LON,
+            "appid": OWM_API_KEY,
+            "units": "metric",
+        }
+    )
+    url = f"https://api.openweathermap.org/data/2.5/weather?{params}"
+    req = urllib.request.Request(url, headers={"User-Agent": "RelaxZone/1.0"})
+    with urllib.request.urlopen(req, timeout=12) as resp:
+        return json.loads(resp.read().decode("utf-8", "replace"))
+
+
+class RadioHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=DIRECTORY, **kwargs)
 
@@ -187,7 +233,6 @@ class HornOkPleaseHandler(http.server.SimpleHTTPRequestHandler):
         body = json.dumps(payload).encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
-        self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Cache-Control", "no-store")
         self.end_headers()
         self.wfile.write(body)
@@ -199,8 +244,8 @@ class HornOkPleaseHandler(http.server.SimpleHTTPRequestHandler):
 
         if path == "/api/playlist":
             raw = (query.get("list") or [""])[0].strip()
-            if not PLAYLIST_ID_RE.match(raw):
-                self._json({"error": "invalid playlist id", "tracks": []}, 400)
+            if not PLAYLIST_ID_RE.match(raw) or raw not in ALLOWED_PLAYLIST_IDS:
+                self._json({"error": "unknown playlist", "tracks": []}, 400)
                 return
             try:
                 self._json(fetch_youtube_playlist(raw))
@@ -210,32 +255,28 @@ class HornOkPleaseHandler(http.server.SimpleHTTPRequestHandler):
                 self._json({"error": str(err), "tracks": []}, 502)
             return
 
-        if path == "/api/wallpapers":
-            genre_id = query.get("genre", ["highway"])[0]
-            genre_id = os.path.basename(genre_id)
-            genre_dir = os.path.join(DIRECTORY, "images", genre_id)
+        if path == "/api/weather":
+            try:
+                data = fetch_weather()
+            except Exception as err:
+                self._json({"error": str(err)}, 502)
+                return
+            if not data:
+                self._json({"error": "weather unavailable", "name": WEATHER_CITY}, 503)
+                return
+            self._json(data)
+            return
 
+        if path == "/api/wallpapers":
+            genre_id = os.path.basename((query.get("genre") or ["highway"])[0])
+            genre_dir = os.path.join(DIRECTORY, "images", genre_id)
             wallpapers = []
             valid_extensions = (".png", ".jpg", ".jpeg", ".webp", ".svg", ".gif")
-
-            if os.path.exists(genre_dir) and os.path.isdir(genre_dir):
+            if os.path.isdir(genre_dir):
                 for filename in sorted(os.listdir(genre_dir)):
                     if filename.lower().endswith(valid_extensions):
                         wallpapers.append(f"images/{genre_id}/{filename}")
-
             self._json({"genre": genre_id, "wallpapers": wallpapers})
-            return
-
-        if path == "/api/genres":
-            images_dir = os.path.join(DIRECTORY, "images")
-            genres = []
-            if os.path.exists(images_dir):
-                genres = [
-                    d
-                    for d in os.listdir(images_dir)
-                    if os.path.isdir(os.path.join(images_dir, d))
-                ]
-            self._json({"genres": genres})
             return
 
         return super().do_GET()
@@ -243,6 +284,6 @@ class HornOkPleaseHandler(http.server.SimpleHTTPRequestHandler):
 
 if __name__ == "__main__":
     socketserver.TCPServer.allow_reuse_address = True
-    with socketserver.TCPServer(("", PORT), HornOkPleaseHandler) as httpd:
-        print(f"[HORN OK PLEASE] Python server running at http://localhost:{PORT}")
+    with socketserver.TCPServer(("", PORT), RadioHandler) as httpd:
+        print(f"RelaxZone running at http://localhost:{PORT}")
         httpd.serve_forever()

@@ -1,1 +1,1 @@
-﻿streamlit>=1.35.0
+﻿# Runtime uses Python 3 stdlib only: python3 server.py

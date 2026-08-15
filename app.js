@@ -9,11 +9,6 @@
    - 1-minute wallpaper rotation
    ============================================================ */
 
-const OWM_API_KEY = "3c5abde3da68c520fb2c16ada9909fcc";
-
-// ------------------------------------------------------------
-// 1. STATION DATABASE — songs come from YouTube playlist IDs
-// ------------------------------------------------------------
 const STATIONS = {
   highway: {
     id: "highway",
@@ -22,7 +17,6 @@ const STATIONS = {
     logoLine1: "हाईवे",
     logoLine2: "वाला रेडियो",
     playlistId: "PLfH-6xXh3waM",
-    playlistUrl: "https://www.youtube.com/playlist?list=PLfH-6xXh3waM",
     slogans: [
       "बुरी नज़र वाले तेरा मुंह काला",
       "सफर खूबसूरत है मंजिल से भी",
@@ -45,7 +39,6 @@ const STATIONS = {
     logoLine1: "ढाबा",
     logoLine2: "सूफ़ियाना",
     playlistId: "PLDd3GFEUXVbA",
-    playlistUrl: "https://www.youtube.com/playlist?list=PLDd3GFEUXVbA",
     slogans: [
       "सर्द हवा, कुल्हड़ की चाय और सूफ़ी की धुन",
       "ढाबे की आग, दिल का सुकून",
@@ -65,7 +58,7 @@ const STATIONS = {
     freq: "FM 102.5",
     logoLine1: "२०००s",
     logoLine2: "डांस धमाका",
-    playlistUrl: "https://www.youtube.com/playlist?list=PLPo3EhjC8W4ASmZ2RHNXF5sdOFMKgtBeK",
+    playlistId: "PLPo3EhjC8W4A",
     slogans: [
       "रात के दो बजे डिस्को चलता है",
       "नाचो! यही वक्त है",
@@ -83,7 +76,7 @@ const STATIONS = {
     freq: "FM 88.0",
     logoLine1: "नब्बे का",
     logoLine2: "दशक",
-    playlistUrl: "https://www.youtube.com/playlist?list=PLEFafAVNRJBoKFSKFx1MCPMhf9kzJBFxC",
+    playlistId: "PLEFafAVNRJBo",
     slogans: [
       "कुमार सानू की आवाज़, ९०s का नशा",
       "वो दिन भी क्या दिन थे",
@@ -101,7 +94,7 @@ const STATIONS = {
     freq: "FM 94.3",
     logoLine1: "मन की",
     logoLine2: "शांति",
-    playlistUrl: "https://www.youtube.com/playlist?list=PLANlPz-KKq6kl2pFv-AriPSMbnoXvqFnH",
+    playlistId: "PLANlPz-KKq6k",
     slogans: [
       "साँस लो, सुनो, शांत हो जाओ",
       "यह धुन तुम्हारे साथ है",
@@ -120,7 +113,6 @@ const STATIONS = {
     logoLine1: "फ्रेड",
     logoLine2: "अगेन...",
     playlistId: "PLZIT0z5Rfu98",
-    playlistUrl: "https://www.youtube.com/playlist?list=PLZIT0z5Rfu98",
     slogans: [
       "Feel it. Live it. Fred again.",
       "Dance like nobody's watching",
@@ -205,9 +197,12 @@ const fmtTime = (s) => {
 
 function playlistIdOf(station) {
   if (!station) return '';
-  if (station.playlistId) return station.playlistId;
-  const m = String(station.playlistUrl || '').match(/[?&]list=([^&]+)/);
-  return m ? decodeURIComponent(m[1]) : '';
+  return station.playlistId || '';
+}
+
+function playlistUrlOf(station) {
+  const id = playlistIdOf(station);
+  return id ? `https://www.youtube.com/playlist?list=${id}` : '#';
 }
 
 function trackFromId(id, fallback = {}) {
@@ -575,8 +570,8 @@ async function switchGenre(genreId, autoPlay = true) {
   el.logoLine1.textContent = station.logoLine1;
   el.logoLine2.textContent = station.logoLine2;
   el.presenceText.textContent = station.name;
-  el.ytLink.href = station.playlistUrl;
-  el.listYtLink.href = station.playlistUrl;
+  el.ytLink.href = playlistUrlOf(station);
+  el.listYtLink.href = playlistUrlOf(station);
   document.getElementById('list-title').textContent = "प्लेलिस्ट — " + station.name;
 
   document.querySelectorAll('.genre-btn').forEach(btn => {
@@ -585,8 +580,7 @@ async function switchGenre(genreId, autoPlay = true) {
 
   state.pos = 0;
   await loadTracksForStation(station);
-
-  startWallpaperRotation(station.wallpapers);
+  startWallpaperRotation(await loadWallpapers(station));
   cycleSlogans(station.slogans);
 
   if (yt && state.ready) cueOrLoadStationPlaylist(autoPlay);
@@ -605,6 +599,17 @@ function crossfadeBg(url) {
   inactive.style.backgroundImage = `url("${url}")`;
   inactive.classList.add("is-active");
   active.classList.remove("is-active");
+}
+
+async function loadWallpapers(station) {
+  try {
+    const res = await fetch(`/api/wallpapers?genre=${encodeURIComponent(station.id)}`);
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data.wallpapers) && data.wallpapers.length) return data.wallpapers;
+    }
+  } catch (_) {}
+  return station.wallpapers || [];
 }
 
 function startWallpaperRotation(customWallpapers) {
@@ -720,7 +725,7 @@ async function fetchWeather() {
   };
 
   try {
-    const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=28.6139&lon=77.2090&appid=${OWM_API_KEY}&units=metric`);
+    const res = await fetch('/api/weather');
     if (res.ok) applyData(await res.json());
   } catch (_) {
     el.weatherTemp.textContent = "28°C";
