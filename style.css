@@ -26,12 +26,13 @@
   --gold: #dc3d4e;
   --gold-rgb: 220, 61, 78;
   --green: #4ade80;
-  --wash-a: rgba(196, 30, 58, 0.55);
-  --wash-b: rgba(255, 77, 109, 0.32);
-  --wash-c: rgba(120, 190, 255, 0.22);
-  --wash-top: #0b1520;
-  --wash-mid: #162433;
-  --wash-bot: #0a1016;
+  --wash-a: #e11d48;
+  --wash-b: #ff7a3c;
+  --wash-c: #3b82ff;
+  --wash-d: #a855f7;
+  --wash-top: #1a0610;
+  --wash-mid: #3a1024;
+  --wash-bot: #0c0814;
 
   --body: "Baloo 2", "Kohinoor Devanagari", "Nirmala UI", "Noto Sans Devanagari", ui-rounded, sans-serif;
   --ui: ui-sans-serif, -apple-system, "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
@@ -78,169 +79,174 @@ a {
   color: inherit;
 }
 
-/* ─── Moving gradient background ──────────────── */
+/* ─── High-chroma moving gradient (GIF-like, no photos) ─ */
 .bg {
   position: fixed;
   inset: 0;
   z-index: -1;
-  background: linear-gradient(165deg, var(--wash-top), var(--wash-mid) 48%, var(--wash-bot));
   overflow: hidden;
-  transition: background 0.8s ease;
-}
-
-.bg__bloom {
-  position: absolute;
-  inset: -42%;
-  background-size: cover;
-  background-position: 40% 50%;
-  filter: blur(80px) saturate(1.85) brightness(0.95);
-  opacity: 0;
-  transform: scale(1.55);
+  isolation: isolate;
+  background: #120814;
   pointer-events: none;
 }
 
-.bg__bloom.is-on {
-  opacity: 0.78;
-  animation: waterBloom 26s ease-in-out infinite;
-}
-
-.bg__aurora {
+.bg__mesh {
   position: absolute;
-  inset: -70%;
-  background: conic-gradient(
-    from 180deg at 48% 52%,
-    var(--wash-a) 0deg,
-    transparent 55deg,
-    var(--wash-b) 110deg,
-    transparent 165deg,
-    var(--wash-c) 220deg,
-    transparent 275deg,
-    var(--wash-a) 320deg,
-    transparent 360deg
+  inset: -35%;
+  background: linear-gradient(
+    118deg,
+    var(--wash-top) 0%,
+    var(--wash-a) 14%,
+    var(--wash-b) 28%,
+    var(--wash-d) 42%,
+    var(--wash-c) 56%,
+    var(--wash-a) 72%,
+    var(--wash-b) 86%,
+    var(--wash-bot) 100%
   );
-  filter: blur(54px) saturate(160%);
-  opacity: 0.88;
-  animation: waterSpin 40s linear infinite;
-  pointer-events: none;
+  background-size: 380% 380%;
+  filter: saturate(1.85) contrast(1.18) brightness(1.06);
+  animation: meshFlow 18s ease-in-out infinite;
 }
 
-.bg__wash {
+.bg__foil {
   position: absolute;
-  inset: -45%;
-  background:
-    radial-gradient(ellipse 78% 62% at 18% 32%, var(--wash-a) 0%, transparent 58%),
-    radial-gradient(ellipse 72% 68% at 86% 18%, var(--wash-b) 0%, transparent 54%),
-    radial-gradient(ellipse 90% 70% at 48% 96%, var(--wash-c) 0%, transparent 56%);
-  filter: blur(28px);
-  opacity: 0.95;
-  animation: waterTide 22s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+  inset: -55%;
+  background: conic-gradient(
+    from 210deg at 48% 52%,
+    var(--wash-a),
+    var(--wash-b),
+    var(--wash-c),
+    var(--wash-d),
+    var(--wash-a)
+  );
+  opacity: 0.58;
+  filter: blur(48px) saturate(1.7);
+  animation: foilSpin 26s linear infinite;
+}
+
+.bg__blob {
+  position: absolute;
+  width: 85vmax;
+  height: 85vmax;
+  border-radius: 50%;
+  filter: blur(64px);
+  opacity: 0.72;
   will-change: transform;
-  pointer-events: none;
-  transition: background 0.8s ease;
+  transform: translate3d(0, 0, 0);
 }
 
-.bg__wash--alt {
-  inset: -52%;
-  opacity: 0.8;
-  mix-blend-mode: screen;
-  animation: waterTideAlt 28s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+.bg__blob--a {
+  top: -36%;
+  left: -26%;
+  background: radial-gradient(circle at 40% 45%, var(--wash-a) 0%, transparent 62%);
+  animation: fluidDriftA 22s ease-in-out infinite;
 }
 
-.bg__wash--deep {
-  inset: -58%;
-  opacity: 0.7;
-  mix-blend-mode: plus-lighter;
-  animation: waterTideDeep 36s cubic-bezier(0.4, 0.1, 0.6, 0.9) infinite;
-  background:
-    radial-gradient(ellipse 88% 74% at 50% 50%, var(--wash-a) 0%, transparent 52%),
-    radial-gradient(ellipse 64% 80% at 8% 78%, var(--wash-c) 0%, transparent 50%),
-    radial-gradient(ellipse 70% 60% at 92% 62%, var(--wash-b) 0%, transparent 48%);
+.bg__blob--b {
+  top: -40%;
+  right: -30%;
+  left: auto;
+  background: radial-gradient(circle at 58% 40%, var(--wash-c) 0%, transparent 60%);
+  animation: fluidDriftB 28s ease-in-out infinite;
 }
 
-@keyframes waterTide {
-  0%   { transform: translate3d(-22%, 8%, 0) scale(1.22) rotate(-4deg); }
-  20%  { transform: translate3d(-4%, -16%, 0) scale(1.34) rotate(3deg); }
-  40%  { transform: translate3d(20%, -6%, 0) scale(1.26) rotate(6deg); }
-  60%  { transform: translate3d(14%, 18%, 0) scale(1.38) rotate(-2deg); }
-  80%  { transform: translate3d(-10%, 14%, 0) scale(1.3) rotate(-6deg); }
-  100% { transform: translate3d(-22%, 8%, 0) scale(1.22) rotate(-4deg); }
+.bg__blob--c {
+  bottom: -44%;
+  left: 6%;
+  width: 108vmax;
+  height: 76vmax;
+  background: radial-gradient(ellipse at 50% 40%, var(--wash-d) 0%, var(--wash-b) 38%, transparent 68%);
+  animation: fluidDriftC 32s ease-in-out infinite;
 }
 
-@keyframes waterTideAlt {
-  0%   { transform: translate3d(20%, -12%, 0) scale(1.28) rotate(5deg); }
-  30%  { transform: translate3d(-8%, -8%, 0) scale(1.42) rotate(-4deg); }
-  55%  { transform: translate3d(-22%, 10%, 0) scale(1.32) rotate(-7deg); }
-  80%  { transform: translate3d(8%, 20%, 0) scale(1.4) rotate(3deg); }
-  100% { transform: translate3d(20%, -12%, 0) scale(1.28) rotate(5deg); }
+@keyframes meshFlow {
+  0%   { background-position: 8% 20%; }
+  35%  { background-position: 82% 48%; }
+  65%  { background-position: 40% 88%; }
+  100% { background-position: 8% 20%; }
 }
 
-@keyframes waterTideDeep {
-  0%   { transform: translate3d(-12%, -14%, 0) scale(1.36) rotate(2deg); }
-  35%  { transform: translate3d(16%, 4%, 0) scale(1.5) rotate(-5deg); }
-  70%  { transform: translate3d(-6%, 18%, 0) scale(1.4) rotate(4deg); }
-  100% { transform: translate3d(-12%, -14%, 0) scale(1.36) rotate(2deg); }
+@keyframes foilSpin {
+  from { transform: rotate(0deg) scale(1.15); }
+  to   { transform: rotate(360deg) scale(1.15); }
 }
 
-@keyframes waterSpin {
-  0%   { transform: rotate(0deg) translate3d(-12%, 10%, 0) scale(1.45); }
-  50%  { transform: rotate(180deg) translate3d(14%, -12%, 0) scale(1.62); }
-  100% { transform: rotate(360deg) translate3d(-12%, 10%, 0) scale(1.45); }
+@keyframes fluidDriftA {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  25%  { transform: translate3d(16%, 12%, 0) scale(1.14); }
+  50%  { transform: translate3d(6%, 24%, 0) scale(0.94); }
+  75%  { transform: translate3d(-12%, 8%, 0) scale(1.1); }
+  100% { transform: translate3d(0, 0, 0) scale(1); }
 }
 
-@keyframes waterBloom {
-  0%   { background-position: 22% 38%; transform: scale(1.52) translate3d(-8%, 6%, 0); }
-  35%  { background-position: 78% 52%; transform: scale(1.78) translate3d(9%, -8%, 0); }
-  65%  { background-position: 52% 82%; transform: scale(1.6) translate3d(-5%, 10%, 0); }
-  100% { background-position: 22% 38%; transform: scale(1.52) translate3d(-8%, 6%, 0); }
+@keyframes fluidDriftB {
+  0%   { transform: translate3d(0, 0, 0) scale(1.06); }
+  30%  { transform: translate3d(-18%, 14%, 0) scale(0.92); }
+  60%  { transform: translate3d(-4%, 26%, 0) scale(1.16); }
+  100% { transform: translate3d(0, 0, 0) scale(1.06); }
+}
+
+@keyframes fluidDriftC {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  40%  { transform: translate3d(14%, -16%, 0) scale(1.12); }
+  70%  { transform: translate3d(-10%, -6%, 0) scale(0.9); }
+  100% { transform: translate3d(0, 0, 0) scale(1); }
 }
 
 .genre--highway {
-  --wash-a: rgba(196, 30, 58, 0.72);
-  --wash-b: rgba(255, 77, 109, 0.48);
-  --wash-c: rgba(90, 160, 255, 0.42);
-  --wash-top: #08131c;
-  --wash-mid: #1a2430;
-  --wash-bot: #0c1014;
+  --wash-a: #e11d48;
+  --wash-b: #ff6b4a;
+  --wash-c: #3b82ff;
+  --wash-d: #c026d3;
+  --wash-top: #2a0612;
+  --wash-mid: #4a1230;
+  --wash-bot: #120814;
 }
 .genre--dhaba {
-  --wash-a: rgba(255, 150, 70, 0.7);
-  --wash-b: rgba(255, 210, 140, 0.42);
-  --wash-c: rgba(180, 90, 40, 0.5);
-  --wash-top: #0c1218;
-  --wash-mid: #241910;
-  --wash-bot: #0a0806;
+  --wash-a: #ff7a18;
+  --wash-b: #ffd166;
+  --wash-c: #ff4d6d;
+  --wash-d: #fb7185;
+  --wash-top: #2a1208;
+  --wash-mid: #4a2410;
+  --wash-bot: #140806;
 }
 .genre--dance2000 {
-  --wash-a: rgba(210, 80, 255, 0.62);
-  --wash-b: rgba(80, 120, 255, 0.5);
-  --wash-c: rgba(255, 60, 140, 0.48);
-  --wash-top: #0c0618;
-  --wash-mid: #1a1030;
-  --wash-bot: #080510;
+  --wash-a: #d946ef;
+  --wash-b: #6366f1;
+  --wash-c: #fb7185;
+  --wash-d: #22d3ee;
+  --wash-top: #1a0630;
+  --wash-mid: #32145a;
+  --wash-bot: #0c0518;
 }
 .genre--retro90s {
-  --wash-a: rgba(255, 80, 140, 0.62);
-  --wash-b: rgba(255, 180, 90, 0.42);
-  --wash-c: rgba(160, 70, 200, 0.48);
-  --wash-top: #120814;
-  --wash-mid: #241428;
-  --wash-bot: #0a060e;
+  --wash-a: #ff4d8d;
+  --wash-b: #ffb020;
+  --wash-c: #a855f7;
+  --wash-d: #f472b6;
+  --wash-top: #240814;
+  --wash-mid: #3c1840;
+  --wash-bot: #120610;
 }
 .genre--antidepression {
-  --wash-a: rgba(70, 210, 160, 0.6);
-  --wash-b: rgba(120, 200, 255, 0.42);
-  --wash-c: rgba(40, 140, 110, 0.48);
-  --wash-top: #061410;
-  --wash-mid: #10241c;
-  --wash-bot: #050c08;
+  --wash-a: #2dd4bf;
+  --wash-b: #38bdf8;
+  --wash-c: #34d399;
+  --wash-d: #818cf8;
+  --wash-top: #062018;
+  --wash-mid: #0c3a30;
+  --wash-bot: #041410;
 }
 .genre--fredagain {
-  --wash-a: rgba(40, 220, 255, 0.58);
-  --wash-b: rgba(120, 90, 255, 0.48);
-  --wash-c: rgba(40, 120, 255, 0.42);
-  --wash-top: #070814;
-  --wash-mid: #12142c;
-  --wash-bot: #06070f;
+  --wash-a: #22d3ee;
+  --wash-b: #818cf8;
+  --wash-c: #38bdf8;
+  --wash-d: #c084fc;
+  --wash-top: #081028;
+  --wash-mid: #1a2050;
+  --wash-bot: #060814;
 }
 
 .bg__scrim {
@@ -248,10 +254,10 @@ a {
   inset: 0;
   background: linear-gradient(
     to bottom,
-    rgba(6, 10, 16, 0.28) 0%,
-    rgba(6, 10, 16, 0.02) 32%,
-    rgba(6, 10, 16, 0.06) 62%,
-    rgba(6, 10, 16, 0.4) 100%
+    rgba(6, 8, 16, 0.22) 0%,
+    rgba(6, 8, 16, 0.04) 34%,
+    rgba(6, 8, 16, 0.08) 62%,
+    rgba(6, 8, 16, 0.38) 100%
   );
   pointer-events: none;
 }
@@ -1303,9 +1309,9 @@ main.main {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .bg__wash,
-  .bg__aurora,
-  .bg__bloom,
+  .bg__mesh,
+  .bg__foil,
+  .bg__blob,
   .genre-btn,
   .genre-panel::before,
   .genre-panel__title,
