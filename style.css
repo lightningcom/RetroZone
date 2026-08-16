@@ -4,7 +4,7 @@
    ============================================================ */
 
 :root {
-  --logo-size: clamp(3.5rem, 13.5vw, 8.6rem);
+  --logo-size: clamp(4.8rem, 22vw, 12rem);
   --mark: "Yatra One", "Noto Sans Devanagari", "Baloo 2", sans-serif;
   --display: "Baloo 2", "Kohinoor Devanagari", "Nirmala UI", "Noto Sans Devanagari", ui-rounded, sans-serif;
   --mark-glow: rgba(220, 61, 78, 0.55);
@@ -353,22 +353,16 @@ a {
   border-radius: 999px;
   font-size: 0.76rem;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(255, 255, 255, 0.92);
+  text-shadow: none;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
 
 .weather-temp {
-  color: var(--gold);
+  color: #fff8f0;
   font-weight: 700;
-}
-
-.weather-city {
-  color: rgba(255, 255, 255, 0.65);
-  max-width: 11.5rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  letter-spacing: 0.01em;
 }
 
 .links {
@@ -380,17 +374,16 @@ a {
 .yt-link-badge {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  padding: 0.28rem 0.75rem;
+  justify-content: center;
+  width: 2.15rem;
+  height: 2.15rem;
+  padding: 0;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.18);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  font-family: var(--ui);
-  font-size: 0.76rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.75);
+  color: rgba(255, 255, 255, 0.88);
   transition: all var(--swift);
 }
 
@@ -420,6 +413,7 @@ main.main {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   text-align: center;
   line-height: 1.32;
   overflow: visible;
@@ -448,23 +442,7 @@ main.main {
 }
 
 .logo__l2 {
-  font-family: var(--mark);
-  font-weight: 400;
-  display: block;
-  font-size: calc(var(--logo-size) * 0.4);
-  line-height: 1.35;
-  padding: 0.12em 0.1em 0.06em;
-  overflow: visible;
-  color: transparent;
-  margin-top: 0;
-  letter-spacing: 0.06em;
-  background: linear-gradient(180deg, #fff 10%, #ffe4e8 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  filter:
-    drop-shadow(0 0 12px var(--mark-halo))
-    drop-shadow(0 6px 18px var(--mark-glow))
-    drop-shadow(0 2px 4px var(--mark-shade));
+  display: none;
 }
 
 @keyframes truck-shake {
@@ -1277,6 +1255,7 @@ main.main {
   :root {
     /* Sit above Streamlit's "Made with Streamlit" badge */
     --dock-lift: max(5.4rem, calc(env(safe-area-inset-bottom) + 4.2rem));
+    --logo-size: clamp(5.2rem, 28vw, 12rem);
   }
   .presence__text { display: none; }
   .horns {
