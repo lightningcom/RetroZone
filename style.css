@@ -69,45 +69,66 @@ a {
   color: inherit;
 }
 
-/* ─── Background Crossfade Layers ─────────────── */
+/* ─── Moving gradient background ──────────────── */
 .bg {
   position: fixed;
   inset: 0;
   z-index: -1;
   background: linear-gradient(165deg, var(--wash-top), var(--wash-mid) 48%, var(--wash-bot));
+  overflow: hidden;
+}
+
+.bg__aurora {
+  position: absolute;
+  inset: -55%;
+  background: conic-gradient(
+    from 200deg at 50% 45%,
+    transparent 0deg,
+    var(--wash-a) 70deg,
+    transparent 125deg,
+    var(--wash-b) 190deg,
+    transparent 250deg,
+    var(--wash-c) 310deg,
+    transparent 360deg
+  );
+  filter: blur(48px) saturate(140%);
+  opacity: 0.7;
+  animation: auroraSpin 32s linear infinite;
+  pointer-events: none;
 }
 
 .bg__wash {
   position: absolute;
-  inset: -18%;
+  inset: -28%;
   background:
-    radial-gradient(ellipse 42% 36% at 18% 28%, var(--wash-a) 0%, transparent 62%),
-    radial-gradient(ellipse 48% 40% at 82% 18%, var(--wash-b) 0%, transparent 58%),
-    radial-gradient(ellipse 55% 42% at 50% 92%, var(--wash-c) 0%, transparent 62%);
-  filter: blur(12px);
-  animation: washDrift 26s ease-in-out infinite alternate;
+    radial-gradient(ellipse 48% 40% at 18% 28%, var(--wash-a) 0%, transparent 62%),
+    radial-gradient(ellipse 52% 44% at 84% 16%, var(--wash-b) 0%, transparent 58%),
+    radial-gradient(ellipse 58% 46% at 48% 92%, var(--wash-c) 0%, transparent 62%);
+  filter: blur(18px);
+  animation: washDrift 16s ease-in-out infinite alternate;
   pointer-events: none;
 }
 
+.bg__wash--alt {
+  inset: -35%;
+  opacity: 0.55;
+  mix-blend-mode: screen;
+  animation: washDriftAlt 22s ease-in-out infinite alternate;
+}
+
 @keyframes washDrift {
-  from { transform: translate3d(-3%, -2%, 0) scale(1.04); }
-  to { transform: translate3d(4%, 3%, 0) scale(1.12); }
+  from { transform: translate3d(-6%, -4%, 0) scale(1.05); }
+  to { transform: translate3d(7%, 5%, 0) scale(1.18); }
 }
 
-.bg__layer {
-  position: absolute;
-  inset: 0;
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-position: center;
-  opacity: 0;
-  filter: saturate(0.55) brightness(0.78);
-  mix-blend-mode: soft-light;
-  transition: opacity 1.4s var(--settle);
+@keyframes washDriftAlt {
+  from { transform: translate3d(5%, 6%, 0) scale(1.1) rotate(-8deg); }
+  to { transform: translate3d(-8%, -5%, 0) scale(1.22) rotate(10deg); }
 }
 
-.bg__layer.is-active {
-  opacity: 0.34;
+@keyframes auroraSpin {
+  from { transform: rotate(0deg) scale(1.2); }
+  to { transform: rotate(360deg) scale(1.2); }
 }
 
 .genre--highway {
@@ -172,17 +193,18 @@ a {
   pointer-events: none;
 }
 
-/* YouTube audio host — stay in-viewport so mobile does not treat it as offscreen */
+/* YouTube audio host — in-document but invisible */
 .yt-host {
   position: fixed;
   left: 0;
   bottom: 0;
-  width: 2px;
-  height: 2px;
+  width: 1px;
+  height: 1px;
   overflow: hidden;
-  opacity: 0.02;
+  opacity: 0;
+  clip-path: inset(100%);
   pointer-events: none;
-  z-index: 1;
+  z-index: -1;
 }
 
 /* ─── Topbar (Completely Clean & Floating) ─────── */
@@ -1091,6 +1113,7 @@ main.main {
 
 @media (prefers-reduced-motion: reduce) {
   .bg__wash,
+  .bg__aurora,
   .genre-btn {
     animation: none;
   }

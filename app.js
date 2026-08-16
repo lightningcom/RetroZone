@@ -5,8 +5,6 @@
    - 60fps rAF seek bar with extrapolation
    - 6 Curated Radio Stations (Highway, Dhaba, 2000s Dance, 90s Retro, Anti-Depression, Fred again..)
    - Synthesised Indian Truck Horn
-   - Real-time Clock & OpenWeatherMap
-   - 1-minute wallpaper rotation
    ============================================================ */
 
 const STATIONS = {
@@ -245,8 +243,6 @@ const state = {
 };
 
 let yt = null;
-let wallpaperTimer = null;
-let wallpaperIdx = 0;
 let sloganTimer = null;
 let currentSloganIdx = 0;
 let audioCtx = null;
@@ -813,14 +809,22 @@ function updateMediaSession() {
 }
 
 function mountYouTubeHost(win) {
+  const hidden =
+    'position:fixed;left:0;bottom:0;width:1px;height:1px;opacity:0;overflow:hidden;clip:rect(0,0,0,0);clip-path:inset(100%);border:0;z-index:-1;pointer-events:none;';
+  if (!win.document.getElementById('hz-yt-hide')) {
+    const style = win.document.createElement('style');
+    style.id = 'hz-yt-hide';
+    style.textContent = '#hz-yt-host,#hz-yt-host iframe,#hz-yt-player{position:fixed!important;left:0!important;bottom:0!important;width:1px!important;height:1px!important;min-width:0!important;min-height:0!important;opacity:0!important;overflow:hidden!important;clip-path:inset(100%)!important;border:0!important;pointer-events:none!important;z-index:-1!important;}';
+    win.document.head.appendChild(style);
+  }
   let host = win.document.getElementById('hz-yt-host');
   if (!host) {
     host = win.document.createElement('div');
     host.id = 'hz-yt-host';
     host.setAttribute('aria-hidden', 'true');
-    host.style.cssText = 'position:fixed;left:0;bottom:0;width:80px;height:80px;opacity:0.12;z-index:2147483000;overflow:hidden;pointer-events:none;';
     win.document.body.appendChild(host);
   }
+  host.style.cssText = hidden;
   let mount = win.document.getElementById('hz-yt-player');
   if (!mount) {
     mount = win.document.createElement('div');
@@ -867,8 +871,8 @@ function bootYouTubePlayer() {
   const first = currentTrack();
   const YTref = w.YT || window.YT;
   yt = new YTref.Player(mountId, {
-    height: '80',
-    width: '80',
+    height: '1',
+    width: '1',
     videoId: first ? first.id : undefined,
     playerVars: {
       playsinline: 1,
@@ -1006,52 +1010,11 @@ async function switchGenre(genreId, autoPlay = true) {
   applyTracks([]);
   await loadTracksForStation(station, epoch);
   if (epoch !== state.epoch) return;
-  startWallpaperRotation(await loadWallpapers(station));
-  if (epoch !== state.epoch) return;
   cycleSlogans(station.slogans);
 
   if (yt && state.ready) cueOrLoadStationPlaylist(autoPlay);
 
   if (el.genrePanel.classList.contains('is-open')) toggleGenrePanel();
-}
-
-// ------------------------------------------------------------
-// 10. BACKGROUND WALLPAPERS (1 Minute Delay)
-// ------------------------------------------------------------
-function crossfadeBg(url) {
-  const layer1 = document.querySelector(".bg__layer--1");
-  const layer2 = document.querySelector(".bg__layer--2");
-  const active = document.querySelector(".bg__layer.is-active");
-  const inactive = active === layer1 ? layer2 : layer1;
-  inactive.style.backgroundImage = `url("${url}")`;
-  inactive.classList.add("is-active");
-  active.classList.remove("is-active");
-}
-
-async function loadWallpapers(station) {
-  try {
-    const res = await fetch(`/api/wallpapers?genre=${encodeURIComponent(station.id)}`);
-    if (res.ok) {
-      const data = await res.json();
-      if (Array.isArray(data.wallpapers) && data.wallpapers.length) return data.wallpapers;
-    }
-  } catch (_) {}
-  return station.wallpapers || [];
-}
-
-function startWallpaperRotation(customWallpapers) {
-  const list = customWallpapers || STATIONS[currentGenre].wallpapers;
-  if (!list || !list.length) return;
-
-  if (wallpaperTimer) clearInterval(wallpaperTimer);
-  wallpaperIdx = 0;
-  crossfadeBg(list[0]);
-
-  // 60,000ms = 1 minute delay
-  wallpaperTimer = setInterval(() => {
-    wallpaperIdx = (wallpaperIdx + 1) % list.length;
-    crossfadeBg(list[wallpaperIdx]);
-  }, 60000);
 }
 
 // ------------------------------------------------------------
