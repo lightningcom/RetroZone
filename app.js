@@ -278,10 +278,14 @@ function trackFromId(id, fallback = {}) {
   };
 }
 
-function applyTracks(tracks) {
+function applyTracks(tracks, { randomStart = true } = {}) {
   state.tracks = tracks;
   state.order = buildOrder();
-  if (state.pos >= state.order.length) state.pos = 0;
+  if (randomStart && state.shuffle && state.order.length) {
+    state.pos = Math.floor(Math.random() * state.order.length);
+  } else if (state.pos >= state.order.length) {
+    state.pos = 0;
+  }
   renderList();
   renderTrack();
 }
@@ -348,14 +352,14 @@ function cueOrLoadStationPlaylist(autoPlay) {
         state.started = true;
         state.wantPlay = true;
         enableBackgroundPlayback();
-        yt.loadPlaylist(ids, 0);
+        yt.loadPlaylist(ids, state.pos);
       } else {
-        yt.cuePlaylist(ids, 0);
+        yt.cuePlaylist(ids, state.pos);
       }
       return;
     }
     if (!listId) return;
-    const opts = { listType: 'playlist', list: listId, index: 0 };
+    const opts = { listType: 'playlist', list: listId, index: state.pos || 0 };
     if (autoPlay) {
       state.started = true;
       state.wantPlay = true;
@@ -500,14 +504,18 @@ function paletteFromImage(img) {
   const c3 = ranked.find((c, i) => i > 0 && c !== c2 && Math.abs(c.r - c1.r) + Math.abs(c.g - c1.g) + Math.abs(c.b - c1.b) > 50) || ranked[Math.min(2, ranked.length - 1)];
   const v1 = saturateRgb(c1.r, c1.g, c1.b, 1.7);
   const v2 = saturateRgb(c2.r, c2.g, c2.b, 1.5);
-  const v3 = saturateRgb(c3.r, c3.g, c3.b, 1.45);
+  const crim = mixToward(c3.r, c3.g, c3.b, 196, 30, 58, 0.42);
+  const accent = mixToward(v1[0], v1[1], v1[2], 196, 30, 58, 0.38);
+  const v3s = saturateRgb(crim[0], crim[1], crim[2], 1.45);
   const deep = mixToward(v1[0], v1[1], v1[2], 8, 10, 16, 0.74);
-  const mid = mixToward(v1[0], v1[1], v1[2], 12, 16, 24, 0.58);
-  const bot = mixToward(v3[0], v3[1], v3[2], 6, 8, 12, 0.8);
+  const mid = mixToward(accent[0], accent[1], accent[2], 12, 16, 24, 0.58);
+  const bot = mixToward(v3s[0], v3s[1], v3s[2], 6, 8, 12, 0.8);
   return {
     a: rgbaStr(v1[0], v1[1], v1[2], 0.78),
     b: rgbaStr(v2[0], v2[1], v2[2], 0.62),
-    c: rgbaStr(v3[0], v3[1], v3[2], 0.55),
+    c: rgbaStr(v3s[0], v3s[1], v3s[2], 0.6),
+    accent: rgbStr(accent[0], accent[1], accent[2]),
+    accentRgb: `${accent[0] | 0}, ${accent[1] | 0}, ${accent[2] | 0}`,
     top: rgbStr(deep[0], deep[1], deep[2]),
     mid: rgbStr(mid[0], mid[1], mid[2]),
     bot: rgbStr(bot[0], bot[1], bot[2])
@@ -523,6 +531,11 @@ function applyPalette(palette) {
   root.style.setProperty('--wash-top', palette.top);
   root.style.setProperty('--wash-mid', palette.mid);
   root.style.setProperty('--wash-bot', palette.bot);
+  if (palette.accent) {
+    root.style.setProperty('--gold', palette.accent);
+    root.style.setProperty('--gold-rgb', palette.accentRgb);
+    root.style.setProperty('--crimson-hot', palette.accent);
+  }
 }
 
 function loadAmbianceImage(src) {
@@ -1044,7 +1057,7 @@ function bootYouTubePlayer() {
         w.__hzYt = yt;
         unlockEmbeddedPlayback();
         preferAudio();
-        cueOrLoadStationPlaylist(false);
+        cueOrLoadStationPlaylist(true);
         installParentKeepAlive();
       },
       onStateChange: (e) => {
@@ -1156,7 +1169,6 @@ async function switchGenre(genreId, autoPlay = true) {
 
   markActiveStation(genreId);
 
-  state.pos = 0;
   applyTracks([]);
   await loadTracksForStation(station, epoch);
   if (epoch !== state.epoch) return;
@@ -1354,7 +1366,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   fetchWeather();
 
   renderStationChooser();
-  await switchGenre("highway", false);
+  await switchGenre("highway", true);
   el.shuffle.classList.toggle('active', state.shuffle);
   el.shuffle.setAttribute('aria-pressed', String(state.shuffle));
   loadYouTubeApi();
