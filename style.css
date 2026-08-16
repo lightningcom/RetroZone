@@ -5,7 +5,7 @@
 
 :root {
   --logo-size: clamp(3.5rem, 13.5vw, 8.6rem);
-  --mark: "Rozha One", "Noto Serif Devanagari", "Baloo 2", serif;
+  --mark: "Yatra One", "Noto Sans Devanagari", "Baloo 2", sans-serif;
   --display: "Baloo 2", "Kohinoor Devanagari", "Nirmala UI", "Noto Sans Devanagari", ui-rounded, sans-serif;
   --mark-glow: rgba(220, 61, 78, 0.55);
   --mark-halo: rgba(255, 140, 160, 0.4);
@@ -481,7 +481,7 @@ main.main {
 }
 
 .bumper__text {
-  font-family: var(--display);
+  font-family: var(--mark);
   font-weight: 700;
   font-size: clamp(1.05rem, 3vw, 1.45rem);
   color: #fff;
