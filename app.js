@@ -516,6 +516,9 @@ function paletteFromImage(img) {
     c: rgbaStr(v3s[0], v3s[1], v3s[2], 0.6),
     accent: rgbStr(accent[0], accent[1], accent[2]),
     accentRgb: `${accent[0] | 0}, ${accent[1] | 0}, ${accent[2] | 0}`,
+    glow: rgbaStr(accent[0], accent[1], accent[2], 0.58),
+    halo: rgbaStr(v1[0], v1[1], v1[2], 0.42),
+    shade: rgbaStr(deep[0], deep[1], deep[2], 0.58),
     top: rgbStr(deep[0], deep[1], deep[2]),
     mid: rgbStr(mid[0], mid[1], mid[2]),
     bot: rgbStr(bot[0], bot[1], bot[2])
@@ -535,6 +538,9 @@ function applyPalette(palette) {
     root.style.setProperty('--gold', palette.accent);
     root.style.setProperty('--gold-rgb', palette.accentRgb);
     root.style.setProperty('--crimson-hot', palette.accent);
+    if (palette.glow) root.style.setProperty('--mark-glow', palette.glow);
+    if (palette.halo) root.style.setProperty('--mark-halo', palette.halo);
+    if (palette.shade) root.style.setProperty('--mark-shade', palette.shade);
   }
 }
 
