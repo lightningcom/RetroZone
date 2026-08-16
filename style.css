@@ -76,6 +76,23 @@ a {
   z-index: -1;
   background: linear-gradient(165deg, var(--wash-top), var(--wash-mid) 48%, var(--wash-bot));
   overflow: hidden;
+  transition: background 0.8s ease;
+}
+
+.bg__bloom {
+  position: absolute;
+  inset: -30%;
+  background-size: cover;
+  background-position: center;
+  filter: blur(72px) saturate(1.55) brightness(0.85);
+  opacity: 0;
+  transform: scale(1.45);
+  transition: opacity 0.9s ease, filter 0.9s ease;
+  pointer-events: none;
+}
+
+.bg__bloom.is-on {
+  opacity: 0.55;
 }
 
 .bg__aurora {
@@ -107,6 +124,7 @@ a {
   filter: blur(18px);
   animation: washDrift 16s ease-in-out infinite alternate;
   pointer-events: none;
+  transition: background 0.8s ease;
 }
 
 .bg__wash--alt {
@@ -1114,6 +1132,7 @@ main.main {
 @media (prefers-reduced-motion: reduce) {
   .bg__wash,
   .bg__aurora,
+  .bg__bloom,
   .genre-btn {
     animation: none;
   }
