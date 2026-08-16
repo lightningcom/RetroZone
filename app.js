@@ -1020,8 +1020,24 @@ function cycleSlogans(slogans) {
 }
 
 // ------------------------------------------------------------
-// 12. TRUCK HORN AUDIO
+// 12. TRUCK HORN AUDIO (same sample as hornokplease.xyz)
 // ------------------------------------------------------------
+const HORN_SRC = window.HORN_SRC || 'assets/horn.mp3';
+let hornBytes = null;
+let hornBuffer = null;
+let hornSource = null;
+let duckTimer = null;
+let duckedFrom = null;
+
+try {
+  if (navigator.audioSession) navigator.audioSession.type = 'playback';
+} catch (_) {}
+
+fetch(HORN_SRC)
+  .then((r) => (r.ok ? r.arrayBuffer() : null))
+  .then((b) => { hornBytes = b; })
+  .catch(() => {});
+
 function ensureAudio() {
   try {
     audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
@@ -1032,57 +1048,66 @@ function ensureAudio() {
   }
 }
 
-function honk() {
+async function loadHorn(ctx) {
+  if (hornBuffer) return hornBuffer;
+  if (!hornBytes) {
+    try {
+      const res = await fetch(HORN_SRC);
+      hornBytes = res.ok ? await res.arrayBuffer() : null;
+    } catch (_) {
+      return null;
+    }
+  }
+  if (!hornBytes) return null;
+  try {
+    hornBuffer = await ctx.decodeAudioData(hornBytes.slice(0));
+  } catch (_) {
+    return null;
+  }
+  return hornBuffer;
+}
+
+function duckMusic(ms) {
+  if (!yt || typeof yt.getVolume !== 'function' || typeof yt.setVolume !== 'function') return;
+  if (duckedFrom === null) duckedFrom = yt.getVolume();
+  yt.setVolume(Math.round(duckedFrom * 0.4));
+  clearTimeout(duckTimer);
+  duckTimer = setTimeout(() => {
+    if (duckedFrom !== null) yt.setVolume(duckedFrom);
+    duckedFrom = null;
+  }, ms + 120);
+}
+
+async function honk() {
   const ctx = ensureAudio();
   if (!ctx) return;
 
-  const now = ctx.currentTime;
-  const duration = 1.35;
-  const master = ctx.createGain();
-  const filter = ctx.createBiquadFilter();
-  filter.type = "lowpass";
-  filter.frequency.setValueAtTime(980, now);
-  filter.Q.value = 0.85;
-  master.gain.setValueAtTime(0.72, now);
-  filter.connect(master);
-  master.connect(ctx.destination);
+  const buffer = await loadHorn(ctx);
+  if (!buffer) return;
 
-  // Dual-tone air horn (classical truck / lorry): Eb + F# fifth-ish stack + sub.
-  const voices = [
-    { freq: 311.13, type: "sawtooth", gain: 0.28, detune: -6 },
-    { freq: 370.0, type: "square", gain: 0.22, detune: 4 },
-    { freq: 311.13, type: "triangle", gain: 0.16, detune: 9 },
-    { freq: 466.16, type: "sawtooth", gain: 0.09, detune: -3 },
-    { freq: 155.56, type: "sine", gain: 0.18, detune: 0 }
-  ];
+  try { hornSource?.stop(); } catch (_) {}
 
-  voices.forEach((voice) => {
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = voice.type;
-    osc.frequency.setValueAtTime(voice.freq, now);
-    osc.detune.setValueAtTime(voice.detune, now);
-    gain.gain.setValueAtTime(0, now);
-    // Two blasts: short then longer "paa-paaa"
-    gain.gain.linearRampToValueAtTime(voice.gain, now + 0.018);
-    gain.gain.setValueAtTime(voice.gain, now + 0.16);
-    gain.gain.exponentialRampToValueAtTime(0.0008, now + 0.22);
-    gain.gain.setValueAtTime(0.0008, now + 0.30);
-    gain.gain.linearRampToValueAtTime(voice.gain * 1.08, now + 0.34);
-    gain.gain.setValueAtTime(voice.gain * 0.92, now + 1.05);
-    gain.gain.exponentialRampToValueAtTime(0.0008, now + duration);
-    osc.connect(gain);
-    gain.connect(filter);
-    osc.start(now);
-    osc.stop(now + duration + 0.02);
-  });
+  const source = ctx.createBufferSource();
+  const gain = ctx.createGain();
+  source.buffer = buffer;
+  gain.gain.value = 0.9;
+  source.connect(gain).connect(ctx.destination);
+  source.onended = () => {
+    if (hornSource === source) hornSource = null;
+  };
+  source.start();
+  hornSource = source;
+
+  const ms = buffer.duration * 1000;
+  duckMusic(ms);
 
   el.logo.classList.remove('is-shaking');
   void el.logo.offsetWidth;
   el.logo.classList.add('is-shaking');
+  setTimeout(() => el.logo.classList.remove('is-shaking'), 720);
 
   el.hornBtn.classList.add('is-blaring');
-  setTimeout(() => el.hornBtn.classList.remove('is-blaring'), 1350);
+  setTimeout(() => el.hornBtn.classList.remove('is-blaring'), 450);
 }
 
 // ------------------------------------------------------------
@@ -1229,7 +1254,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Prime audio on first touch
   ['pointerdown', 'keydown'].forEach(evt => {
     document.addEventListener(evt, () => {
-      ensureAudio();
+      const ctx = ensureAudio();
+      if (ctx) loadHorn(ctx);
       armBackgroundAudio();
     }, { capture: true });
   });

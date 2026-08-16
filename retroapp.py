@@ -1,5 +1,6 @@
 import json
 import os
+import base64
 import urllib.parse
 import urllib.request
 
@@ -115,13 +116,20 @@ def load_app_html() -> str:
     }
     payload = json.dumps(bootstrap, ensure_ascii=False).replace("<", "\\u003c")
 
+    horn_path = os.path.join(APP_DIR, "assets", "horn.mp3")
+    horn_src = "assets/horn.mp3"
+    if os.path.isfile(horn_path):
+        with open(horn_path, "rb") as handle:
+            horn_src = "data:audio/mpeg;base64," + base64.b64encode(handle.read()).decode("ascii")
+    horn_js = json.dumps(horn_src)
+
     html = html.replace(
         '<link rel="stylesheet" href="style.css" />',
         f"<style>\n{css}\n</style>",
     )
     html = html.replace(
         '<script src="app.js"></script>',
-        f"<script>window.BOOTSTRAP = {payload};</script>\n<script>\n{js}\n</script>",
+        f"<script>window.BOOTSTRAP = {payload}; window.HORN_SRC = {horn_js};</script>\n<script>\n{js}\n</script>",
     )
     return html
 
