@@ -13,7 +13,7 @@
   --glass-line: rgba(255, 255, 255, 0.22);
   --glass-blur: blur(28px) saturate(150%);
   --shadow-glass: 0 8px 40px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.25);
-  --text-shadow: 0 1px 8px rgba(0, 0, 0, 0.6);
+  --text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85), 0 4px 16px rgba(0, 0, 0, 0.75);
 
   --crimson: #9b1b30;
   --crimson-mid: #c41e3a;
@@ -419,7 +419,11 @@ main.main {
   display: block;
   font-size: var(--logo-size);
   color: #ffffff;
-  text-shadow: 0 0 80px rgba(255,183,3,0.38), 0 6px 36px rgba(0,0,0,0.95);
+  text-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.7),
+    0 4px 12px rgba(0, 0, 0, 0.85),
+    0 12px 40px rgba(0, 0, 0, 0.9),
+    0 0 48px rgba(0, 0, 0, 0.55);
   letter-spacing: -1px;
 }
 
@@ -427,10 +431,13 @@ main.main {
   font-family: 'Yatra One', 'Noto Sans Devanagari', sans-serif;
   display: block;
   font-size: calc(var(--logo-size) * 0.38);
-  color: rgba(255,255,255,0.72);
+  color: #ffffff;
   margin-top: 0.15em;
   letter-spacing: -0.5px;
-  text-shadow: 0 4px 20px rgba(0,0,0,0.9);
+  text-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.7),
+    0 4px 14px rgba(0, 0, 0, 0.85),
+    0 10px 28px rgba(0, 0, 0, 0.7);
 }
 
 @keyframes truck-shake {
@@ -464,19 +471,17 @@ main.main {
 .bumper__text {
   font-family: 'Yatra One', 'Noto Sans Devanagari', sans-serif;
   font-size: clamp(0.95rem, 2.6vw, 1.25rem);
-  background: linear-gradient(90deg,
-    rgba(255,255,255,0.95) 0%,
-    rgba(255,90,110,0.95) 42%,
-    rgba(196,30,58,0.92) 72%,
-    rgba(255,255,255,0.85) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #fff;
   text-align: center;
   flex: 1;
   line-height: 1.4;
   word-break: keep-all;
-  filter: drop-shadow(0 0 18px rgba(196, 30, 58, 0.45));
+  text-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.85),
+    0 2px 8px rgba(0, 0, 0, 0.9),
+    0 8px 24px rgba(0, 0, 0, 0.8),
+    0 0 18px rgba(0, 0, 0, 0.55);
+  filter: drop-shadow(0 2px 10px rgba(0, 0, 0, 0.65));
   transition: opacity 0.28s ease, transform 0.28s ease;
 }
 
@@ -622,10 +627,9 @@ main.main {
   isolation: isolate;
   background:
     linear-gradient(155deg,
-      rgba(255, 255, 255, 0.1) 0%,
-      rgba(var(--gold-rgb), 0.12) 38%,
-      rgba(196, 30, 58, 0.16) 72%,
-      rgba(12, 8, 12, 0.28) 100%);
+      rgba(18, 8, 12, 0.78) 0%,
+      rgba(28, 10, 16, 0.72) 42%,
+      rgba(12, 6, 10, 0.8) 100%);
   backdrop-filter: blur(28px) saturate(170%);
   -webkit-backdrop-filter: blur(28px) saturate(170%);
   border: 1px solid rgba(255, 255, 255, 0.18);
@@ -688,23 +692,25 @@ main.main {
 .genre-panel__title {
   font-family: 'Yatra One', 'Noto Sans Devanagari', sans-serif;
   font-size: 1.08rem;
-  background: linear-gradient(90deg, #fff, var(--crimson-hot), var(--gold), #fff);
-  background-size: 220% 100%;
-  animation: titleFlow 8s ease-in-out infinite;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: #fff;
   letter-spacing: 0.02em;
+  text-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.8),
+    0 3px 10px rgba(0, 0, 0, 0.75),
+    0 8px 22px rgba(0, 0, 0, 0.55);
 }
 
 .genre-panel__hint {
   font-family: var(--ui);
   font-size: 0.72rem;
   font-weight: 600;
-  color: rgba(255, 220, 226, 0.7);
+  color: #fff;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  text-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.8),
+    0 3px 10px rgba(0, 0, 0, 0.7);
 }
 
 .genre-panel__grid {
@@ -722,18 +728,23 @@ main.main {
   padding: 0.85rem 0.95rem;
   background:
     linear-gradient(165deg,
-      rgba(255, 255, 255, 0.16) 0%,
-      rgba(var(--gold-rgb), 0.12) 48%,
-      rgba(196, 30, 58, 0.14) 100%);
+      rgba(22, 10, 14, 0.72) 0%,
+      rgba(40, 12, 20, 0.68) 48%,
+      rgba(18, 8, 12, 0.74) 100%);
   background-size: 160% 160%;
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: 18px;
-  color: rgba(255, 246, 248, 0.92);
+  color: #fff;
   font-size: 0.82rem;
   font-weight: 600;
   text-align: left;
   min-height: 4.4rem;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    0 8px 22px rgba(0, 0, 0, 0.35);
+  text-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.75),
+    0 3px 10px rgba(0, 0, 0, 0.65);
   animation:
     stationIn 0.55s var(--settle) backwards,
     cardDrift 8.5s ease-in-out infinite,
@@ -821,33 +832,43 @@ main.main {
   font-size: 0.74rem;
   font-weight: 700;
   letter-spacing: 0.1em;
-  color: rgba(255, 210, 218, 0.82);
+  color: #ffe8ec;
+  text-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.8),
+    0 3px 8px rgba(0, 0, 0, 0.7);
 }
 
 .gb-label {
   font-family: 'Yatra One', 'Noto Sans Devanagari', sans-serif;
   font-size: 0.92rem;
+  color: #fff;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  text-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.85),
+    0 4px 12px rgba(0, 0, 0, 0.7);
 }
 
 .gb-tag {
   font-size: 0.64rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.42);
+  color: rgba(255, 255, 255, 0.88);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  text-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.8),
+    0 3px 8px rgba(0, 0, 0, 0.65);
 }
 
 .genre-btn.active .gb-fm {
-  color: #ffe4e8;
+  color: #fff;
 }
 
 .genre-btn.active .gb-tag {
-  color: rgba(255, 180, 190, 0.75);
+  color: #ffe4e8;
 }
 
 /* ─── Playlist Drawer ─────────────────────────── */
