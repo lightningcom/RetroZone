@@ -403,9 +403,10 @@ main.main {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: max(4.5rem, env(safe-area-inset-top)) var(--edge) calc(var(--dock-lift) + 5.8rem);
+  padding: max(5.2rem, env(safe-area-inset-top)) var(--edge) calc(var(--dock-lift) + 5.8rem);
   gap: 1.15rem;
   pointer-events: none;
+  overflow: visible;
 }
 
 /* Central Truck Art Wordmark */
@@ -414,7 +415,9 @@ main.main {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  line-height: 0.96;
+  line-height: 1.32;
+  overflow: visible;
+  padding: 0.22em 0.18em 0.08em;
   pointer-events: auto;
   user-select: none;
 }
@@ -424,6 +427,9 @@ main.main {
   font-weight: 400;
   display: block;
   font-size: var(--logo-size);
+  line-height: 1.35;
+  padding: 0.16em 0.1em 0.04em;
+  overflow: visible;
   letter-spacing: 0.01em;
   background: linear-gradient(180deg, #ffffff 8%, #fff6f7 52%, #ffd5dc 100%);
   -webkit-background-clip: text;
@@ -440,8 +446,11 @@ main.main {
   font-weight: 400;
   display: block;
   font-size: calc(var(--logo-size) * 0.4);
+  line-height: 1.35;
+  padding: 0.12em 0.1em 0.06em;
+  overflow: visible;
   color: transparent;
-  margin-top: 0.06em;
+  margin-top: 0;
   letter-spacing: 0.06em;
   background: linear-gradient(180deg, #fff 10%, #ffe4e8 100%);
   -webkit-background-clip: text;
