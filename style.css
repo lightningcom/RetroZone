@@ -347,18 +347,20 @@ a {
   border-radius: 999px;
   font-size: 0.76rem;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(255, 255, 255, 0.92);
+  text-shadow: none;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
 
 .weather-temp {
-  color: var(--gold);
+  color: #fff8f0;
   font-weight: 700;
+  letter-spacing: 0.01em;
 }
 
 .weather-city {
-  color: rgba(255, 255, 255, 0.65);
+  color: rgba(255, 255, 255, 0.78);
   max-width: 11.5rem;
   overflow: hidden;
   text-overflow: ellipsis;
