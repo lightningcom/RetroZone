@@ -4,8 +4,12 @@
    ============================================================ */
 
 :root {
-  --logo-size: clamp(3.8rem, 15vw, 9.75rem);
+  --logo-size: clamp(3.5rem, 13.5vw, 8.6rem);
+  --mark: "Rozha One", "Noto Serif Devanagari", "Baloo 2", serif;
   --display: "Baloo 2", "Kohinoor Devanagari", "Nirmala UI", "Noto Sans Devanagari", ui-rounded, sans-serif;
+  --mark-glow: rgba(220, 61, 78, 0.55);
+  --mark-halo: rgba(255, 140, 160, 0.4);
+  --mark-shade: rgba(72, 16, 28, 0.5);
   --edge: clamp(0.9rem, 2.4vw, 1.8rem);
   --dock-lift: clamp(1.8rem, 4.2vh, 2.8rem);
   
@@ -410,37 +414,42 @@ main.main {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  line-height: 1.02;
+  line-height: 0.96;
   pointer-events: auto;
   user-select: none;
 }
 
 .logo__l1 {
-  font-family: var(--display);
-  font-weight: 800;
+  font-family: var(--mark);
+  font-weight: 400;
   display: block;
   font-size: var(--logo-size);
-  color: #ffffff;
-  text-shadow:
-    0 1px 0 rgba(0, 0, 0, 0.7),
-    0 4px 12px rgba(0, 0, 0, 0.85),
-    0 12px 40px rgba(0, 0, 0, 0.9),
-    0 0 48px rgba(0, 0, 0, 0.55);
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
+  background: linear-gradient(180deg, #ffffff 8%, #fff6f7 52%, #ffd5dc 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter:
+    drop-shadow(0 0 18px var(--mark-halo))
+    drop-shadow(0 8px 26px var(--mark-glow))
+    drop-shadow(0 2px 6px var(--mark-shade));
 }
 
 .logo__l2 {
-  font-family: var(--display);
-  font-weight: 700;
+  font-family: var(--mark);
+  font-weight: 400;
   display: block;
-  font-size: calc(var(--logo-size) * 0.42);
-  color: #ffffff;
-  margin-top: 0.08em;
-  letter-spacing: 0.03em;
-  text-shadow:
-    0 1px 0 rgba(0, 0, 0, 0.7),
-    0 4px 14px rgba(0, 0, 0, 0.85),
-    0 10px 28px rgba(0, 0, 0, 0.7);
+  font-size: calc(var(--logo-size) * 0.4);
+  color: transparent;
+  margin-top: 0.06em;
+  letter-spacing: 0.06em;
+  background: linear-gradient(180deg, #fff 10%, #ffe4e8 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  filter:
+    drop-shadow(0 0 12px var(--mark-halo))
+    drop-shadow(0 6px 18px var(--mark-glow))
+    drop-shadow(0 2px 4px var(--mark-shade));
 }
 
 @keyframes truck-shake {
@@ -481,11 +490,10 @@ main.main {
   line-height: 1.4;
   word-break: keep-all;
   text-shadow:
-    0 1px 0 rgba(0, 0, 0, 0.85),
-    0 2px 8px rgba(0, 0, 0, 0.9),
-    0 8px 24px rgba(0, 0, 0, 0.8),
-    0 0 18px rgba(0, 0, 0, 0.55);
-  filter: drop-shadow(0 2px 10px rgba(0, 0, 0, 0.65));
+    0 1px 0 var(--mark-shade),
+    0 4px 14px var(--mark-glow),
+    0 0 20px var(--mark-halo);
+  filter: drop-shadow(0 4px 12px var(--mark-glow));
   transition: opacity 0.28s ease, transform 0.28s ease;
 }
 
