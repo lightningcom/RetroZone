@@ -606,14 +606,21 @@ main.main {
   pointer-events: none;
 }
 
-/* ─── Stations Panel ──────────────────────────── */
+/* ─── Stations Panel (retro tuner) ─────────────── */
 .genre-panel {
+  position: relative;
   width: min(760px, calc(100vw - 1.6rem));
-  background: rgba(10, 16, 22, 0.62);
-  backdrop-filter: blur(28px) saturate(170%);
-  -webkit-backdrop-filter: blur(28px) saturate(170%);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 22px;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 200, 80, 0.03) 0 1px,
+      transparent 1px 7px
+    ),
+    linear-gradient(180deg, rgba(28, 22, 12, 0.92), rgba(10, 9, 8, 0.94));
+  border: 2px solid #c9a227;
+  outline: 1px solid rgba(0, 0, 0, 0.7);
+  outline-offset: -5px;
+  border-radius: 4px;
   overflow: hidden;
   max-height: 0;
   opacity: 0;
@@ -621,8 +628,25 @@ main.main {
   transform-origin: bottom center;
   transition: max-height 0.45s var(--settle), opacity 0.28s ease, transform 0.4s var(--settle);
   pointer-events: none;
-  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.35);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 220, 140, 0.25),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.45),
+    0 12px 40px rgba(0, 0, 0, 0.45);
   margin-bottom: 0.45rem;
+}
+
+.genre-panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0 2px,
+    rgba(0, 0, 0, 0.14) 2px 3px
+  );
+  mix-blend-mode: multiply;
 }
 
 .genre-panel.is-open {
@@ -637,48 +661,54 @@ main.main {
   align-items: baseline;
   justify-content: space-between;
   gap: 0.6rem;
-  padding: 0.9rem 1.15rem 0.55rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0.75rem 1rem 0.5rem;
+  border-bottom: 1px solid rgba(201, 162, 39, 0.35);
 }
 
 .genre-panel__title {
   font-family: 'Yatra One', 'Noto Sans Devanagari', sans-serif;
-  font-size: 1.02rem;
+  font-size: 1.05rem;
   color: var(--gold);
+  letter-spacing: 0.02em;
 }
 
 .genre-panel__hint {
-  font-size: 0.74rem;
-  color: rgba(255, 255, 255, 0.5);
+  font-family: 'Share Tech Mono', ui-monospace, monospace;
+  font-size: 0.7rem;
+  color: #7dff9a;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  text-shadow: 0 0 8px rgba(125, 255, 154, 0.45);
 }
 
 .genre-panel__grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-  gap: 0.65rem;
-  padding: 0.85rem 1rem 1.1rem;
+  gap: 0.55rem;
+  padding: 0.8rem 0.9rem 1rem;
 }
 
 .genre-btn {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 0.7rem;
-  padding: 0.85rem 0.95rem;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  color: rgba(255, 255, 255, 0.78);
+  gap: 0.55rem;
+  padding: 0.7rem 0.8rem;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(201, 162, 39, 0.28);
+  border-radius: 2px;
+  color: rgba(255, 236, 200, 0.88);
   font-size: 0.82rem;
   font-weight: 600;
   text-align: left;
-  min-height: 4.4rem;
+  min-height: 4.2rem;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), inset 0 -1px 0 rgba(0, 0, 0, 0.4);
   animation: stationIn 0.45s var(--settle) both;
   animation-delay: var(--stagger, 0ms);
-  transition: background var(--swift), border-color var(--swift), transform var(--swift), box-shadow var(--swift);
+  transition: background var(--swift), border-color var(--swift), color var(--swift), box-shadow var(--swift);
 }
 
 @keyframes stationIn {
@@ -687,67 +717,77 @@ main.main {
 }
 
 .genre-btn:hover {
-  background: rgba(255, 255, 255, 0.14);
-  color: #fff;
-  border-color: rgba(255, 255, 255, 0.24);
-  transform: translateY(-2px);
+  background: rgba(255, 183, 3, 0.1);
+  color: #fff8e7;
+  border-color: rgba(255, 183, 3, 0.55);
 }
 
 .genre-btn.active {
-  background: linear-gradient(135deg, rgba(255, 183, 3, 0.22), rgba(255, 183, 3, 0.08));
-  border-color: rgba(255, 183, 3, 0.55);
+  background: rgba(255, 183, 3, 0.12);
+  border-color: #ffb703;
   color: var(--gold);
-  box-shadow: 0 0 24px rgba(255, 183, 3, 0.16), inset 0 1px 0 rgba(255, 183, 3, 0.16);
+  box-shadow: inset 0 0 0 1px rgba(255, 183, 3, 0.35), 0 0 18px rgba(255, 183, 3, 0.18);
 }
 
 .gb-live {
   display: none;
   margin-left: auto;
   flex-shrink: 0;
+  font-family: 'Share Tech Mono', ui-monospace, monospace;
   font-size: 0.62rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
+  font-weight: 700;
+  letter-spacing: 0.14em;
   color: #081018;
   background: var(--gold);
-  border-radius: 999px;
-  padding: 0.18rem 0.42rem;
+  border-radius: 0;
+  padding: 0.22rem 0.38rem;
 }
 
 .genre-btn.active .gb-live {
   display: inline-flex;
 }
 
-.gb-icon {
-  font-size: 1.3rem;
-  flex-shrink: 0;
-  line-height: 1;
-}
-
 .gb-info {
   display: flex;
   flex-direction: column;
-  gap: 0.1rem;
+  gap: 0.12rem;
   overflow: hidden;
+  min-width: 0;
+}
+
+.gb-fm {
+  font-family: 'Share Tech Mono', ui-monospace, monospace;
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+  color: #7dff9a;
+  text-shadow: 0 0 8px rgba(125, 255, 154, 0.4);
 }
 
 .gb-label {
   font-family: 'Yatra One', 'Noto Sans Devanagari', sans-serif;
-  font-size: 0.86rem;
+  font-size: 0.9rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.gb-fm {
-  font-size: 0.68rem;
-  color: rgba(255, 255, 255, 0.45);
+.gb-tag {
+  font-size: 0.64rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(255, 220, 160, 0.45);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .genre-btn.active .gb-fm {
-  color: rgba(255, 183, 3, 0.8);
+  color: #ffe08a;
+  text-shadow: 0 0 10px rgba(255, 183, 3, 0.55);
+}
+
+.genre-btn.active .gb-tag {
+  color: rgba(255, 183, 3, 0.7);
 }
 
 /* ─── Playlist Drawer ─────────────────────────── */
@@ -1144,15 +1184,14 @@ main.main {
   .horn__deva { font-size: 0.74rem; }
   .genre-panel { width: min(100% - 1.2rem, 760px); }
   .genre-panel__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .gb-label { font-size: 0.78rem; }
+  .gb-label { font-size: 0.8rem; }
   .gb-live { display: none !important; }
 }
 
 @media (max-width: 480px) {
   .genre-panel__grid { grid-template-columns: 1fr 1fr; gap: 0.4rem; padding: 0.6rem; }
-  .genre-btn { padding: 0.65rem 0.6rem; min-height: 3.8rem; }
-  .gb-icon { font-size: 1.1rem; }
-  .gb-fm { display: none; }
+  .genre-btn { padding: 0.55rem 0.55rem; min-height: 3.6rem; }
+  .gb-tag { display: none; }
   .player { gap: 0.5rem; padding: 0.35rem 0.6rem 0.35rem 0.35rem; }
   .disc { width: 2.8rem; height: 2.8rem; }
   .btn { width: 1.75rem; height: 1.75rem; }

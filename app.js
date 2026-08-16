@@ -1097,25 +1097,24 @@ function renderStationChooser() {
     btn.setAttribute('aria-pressed', String(id === currentGenre));
     btn.style.setProperty('--stagger', `${i * 45}ms`);
 
-    const icon = document.createElement('span');
-    icon.className = 'gb-icon';
-    icon.textContent = station.icon || '📻';
-
     const info = document.createElement('div');
     info.className = 'gb-info';
+    const fm = document.createElement('span');
+    fm.className = 'gb-fm';
+    fm.textContent = station.freq;
     const label = document.createElement('span');
     label.className = 'gb-label';
     label.textContent = station.name;
-    const fm = document.createElement('span');
-    fm.className = 'gb-fm';
-    fm.textContent = station.tag ? `${station.freq} • ${station.tag}` : station.freq;
-    info.append(label, fm);
+    const tag = document.createElement('span');
+    tag.className = 'gb-tag';
+    tag.textContent = station.tag || '';
+    info.append(fm, label, tag);
 
     const live = document.createElement('span');
     live.className = 'gb-live';
     live.textContent = 'ON AIR';
 
-    btn.append(icon, info, live);
+    btn.append(info, live);
     btn.addEventListener('click', () => {
       ensureAudio();
       switchGenre(id, true);
