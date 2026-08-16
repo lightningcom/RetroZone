@@ -290,18 +290,6 @@ class RadioHandler(http.server.SimpleHTTPRequestHandler):
             self._json(data)
             return
 
-        if path == "/api/wallpapers":
-            genre_id = os.path.basename((query.get("genre") or ["highway"])[0])
-            genre_dir = os.path.join(DIRECTORY, "images", genre_id)
-            wallpapers = []
-            valid_extensions = (".png", ".jpg", ".jpeg", ".webp", ".svg", ".gif")
-            if os.path.isdir(genre_dir):
-                for filename in sorted(os.listdir(genre_dir)):
-                    if filename.lower().endswith(valid_extensions):
-                        wallpapers.append(f"images/{genre_id}/{filename}")
-            self._json({"genre": genre_id, "wallpapers": wallpapers})
-            return
-
         return super().do_GET()
 
 

@@ -32,11 +32,6 @@ const STATIONS = {
       "रात की हाईवे, दिल की कहानी",
       "क्लच मत छोड़ना, हिम्मत मत हारना",
       "रास्ते बदलते हैं, गाने नहीं"
-    ],
-    wallpapers: [
-      "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=1920&q=80",
-      "https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=1920&q=80",
-      "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=1920&q=80"
     ]
   },
   dhaba: {
@@ -62,11 +57,6 @@ const STATIONS = {
       "यहाँ वक्त रुकता है, दिल चलता है",
       "सूफ़ी का सुर, ढाबे का धुआँ",
       "रात का पड़ाव, दिल का ठिकाना"
-    ],
-    wallpapers: [
-      "https://images.unsplash.com/photo-1486496146582-9ffcd0b2b2b7?auto=format&fit=crop&w=1920&q=80",
-      "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1920&q=80",
-      "https://images.unsplash.com/photo-1548777123-e216912df7f8?auto=format&fit=crop&w=1920&q=80"
     ]
   },
   dance2000: {
@@ -91,10 +81,6 @@ const STATIONS = {
       "लाउड, प्राउड, २०००s",
       "आइटम नंबर ऑन, दिल ऑफ",
       "बॉलीवुड डांस फ्लोर चालू"
-    ],
-    wallpapers: [
-      "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=1920&q=80",
-      "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1920&q=80"
     ]
   },
   retro90s: {
@@ -119,10 +105,6 @@ const STATIONS = {
       "टेप घिसी, भावना नई",
       "गाँव की बस, शहर का गाना",
       "नब्बे का दशक, दिल का पता"
-    ],
-    wallpapers: [
-      "https://images.unsplash.com/photo-1461360370896-922624d12aa1?auto=format&fit=crop&w=1920&q=80",
-      "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1920&q=80"
     ]
   },
   antidepression: {
@@ -147,10 +129,6 @@ const STATIONS = {
       "धीरे-धीरे सब सँवरता है",
       "दिल को छुट्टी दो",
       "यहाँ जल्दबाज़ी मना है"
-    ],
-    wallpapers: [
-      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1920&q=80",
-      "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=1920&q=80"
     ]
   },
   fredagain: {
@@ -175,10 +153,6 @@ const STATIONS = {
       "Levitating on a long drive",
       "4/4 पर दिल बैठ जाता है",
       "Keep going — Fred again.."
-    ],
-    wallpapers: [
-      "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?auto=format&fit=crop&w=1920&q=80",
-      "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=1920&q=80"
     ]
   }
 };
@@ -427,172 +401,6 @@ function buildOrder() {
 
 const currentTrack = () => state.tracks[state.order[state.pos]] || state.tracks[0];
 
-const ambianceCache = new Map();
-let ambianceToken = 0;
-
-function thumbOf(track, kind = 'mqdefault') {
-  if (track && track.id) return `https://i.ytimg.com/vi/${track.id}/${kind}.jpg`;
-  return (track && track.cover) || '';
-}
-
-function rgbaStr(r, g, b, a) {
-  return `rgba(${r | 0}, ${g | 0}, ${b | 0}, ${a})`;
-}
-
-function rgbStr(r, g, b) {
-  return `rgb(${r | 0}, ${g | 0}, ${b | 0})`;
-}
-
-function mixToward(r, g, b, tr, tg, tb, t) {
-  return [r + (tr - r) * t, g + (tg - g) * t, b + (tb - b) * t];
-}
-
-function saturateRgb(r, g, b, amount) {
-  const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-  return [
-    Math.max(0, Math.min(255, luma + (r - luma) * amount)),
-    Math.max(0, Math.min(255, luma + (g - luma) * amount)),
-    Math.max(0, Math.min(255, luma + (b - luma) * amount))
-  ];
-}
-
-function paletteFromImage(img) {
-  const w = 48;
-  const h = 48;
-  const canvas = document.createElement('canvas');
-  canvas.width = w;
-  canvas.height = h;
-  const ctx = canvas.getContext('2d', { willReadFrequently: true });
-  if (!ctx) return null;
-  ctx.drawImage(img, 0, 0, w, h);
-  const data = ctx.getImageData(0, 0, w, h).data;
-  const buckets = new Map();
-  for (let y = 4; y < h - 4; y += 1) {
-    for (let x = 0; x < w; x += 1) {
-      const i = (y * w + x) * 4;
-      const r = data[i];
-      const g = data[i + 1];
-      const b = data[i + 2];
-      const max = Math.max(r, g, b);
-      const min = Math.min(r, g, b);
-      const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-      if (luma < 18 || luma > 248) continue;
-      const sat = max === 0 ? 0 : (max - min) / max;
-      if (sat < 0.05 && luma < 50) continue;
-      const key = `${r >> 4},${g >> 4},${b >> 4}`;
-      const cur = buckets.get(key) || { r: 0, g: 0, b: 0, n: 0, sat: 0 };
-      cur.r += r;
-      cur.g += g;
-      cur.b += b;
-      cur.n += 1;
-      cur.sat += sat;
-      buckets.set(key, cur);
-    }
-  }
-  const ranked = [...buckets.values()]
-    .map((c) => ({
-      r: c.r / c.n,
-      g: c.g / c.n,
-      b: c.b / c.n,
-      n: c.n,
-      sat: c.sat / c.n
-    }))
-    .sort((a, b) => (b.n * (0.35 + b.sat)) - (a.n * (0.35 + a.sat)));
-  if (!ranked.length) return null;
-  const c1 = ranked[0];
-  const c2 = ranked.find((c, i) => i > 0 && Math.abs(c.r - c1.r) + Math.abs(c.g - c1.g) + Math.abs(c.b - c1.b) > 80) || ranked[Math.min(1, ranked.length - 1)];
-  const c3 = ranked.find((c, i) => i > 0 && c !== c2 && Math.abs(c.r - c1.r) + Math.abs(c.g - c1.g) + Math.abs(c.b - c1.b) > 50) || ranked[Math.min(2, ranked.length - 1)];
-  const v1 = saturateRgb(c1.r, c1.g, c1.b, 1.7);
-  const v2 = saturateRgb(c2.r, c2.g, c2.b, 1.5);
-  const crim = mixToward(c3.r, c3.g, c3.b, 196, 30, 58, 0.42);
-  const accent = mixToward(v1[0], v1[1], v1[2], 196, 30, 58, 0.38);
-  const v3s = saturateRgb(crim[0], crim[1], crim[2], 1.45);
-  const deep = mixToward(v1[0], v1[1], v1[2], 8, 10, 16, 0.74);
-  const mid = mixToward(accent[0], accent[1], accent[2], 12, 16, 24, 0.58);
-  const bot = mixToward(v3s[0], v3s[1], v3s[2], 6, 8, 12, 0.8);
-  return {
-    a: rgbaStr(v1[0], v1[1], v1[2], 0.78),
-    b: rgbaStr(v2[0], v2[1], v2[2], 0.62),
-    c: rgbaStr(v3s[0], v3s[1], v3s[2], 0.6),
-    accent: rgbStr(accent[0], accent[1], accent[2]),
-    accentRgb: `${accent[0] | 0}, ${accent[1] | 0}, ${accent[2] | 0}`,
-    glow: rgbaStr(accent[0], accent[1], accent[2], 0.58),
-    halo: rgbaStr(v1[0], v1[1], v1[2], 0.42),
-    shade: rgbaStr(deep[0], deep[1], deep[2], 0.58),
-    top: rgbStr(deep[0], deep[1], deep[2]),
-    mid: rgbStr(mid[0], mid[1], mid[2]),
-    bot: rgbStr(bot[0], bot[1], bot[2])
-  };
-}
-
-function applyPalette(palette) {
-  if (!palette) return;
-  const root = document.body;
-  root.style.setProperty('--wash-a', palette.a);
-  root.style.setProperty('--wash-b', palette.b);
-  root.style.setProperty('--wash-c', palette.c);
-  root.style.setProperty('--wash-top', palette.top);
-  root.style.setProperty('--wash-mid', palette.mid);
-  root.style.setProperty('--wash-bot', palette.bot);
-  if (palette.accent) {
-    root.style.setProperty('--gold', palette.accent);
-    root.style.setProperty('--gold-rgb', palette.accentRgb);
-    root.style.setProperty('--crimson-hot', palette.accent);
-    if (palette.glow) root.style.setProperty('--mark-glow', palette.glow);
-    if (palette.halo) root.style.setProperty('--mark-halo', palette.halo);
-    if (palette.shade) root.style.setProperty('--mark-shade', palette.shade);
-  }
-}
-
-function loadAmbianceImage(src) {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.decoding = 'async';
-    img.onload = () => resolve(img);
-    img.onerror = reject;
-    img.src = src;
-  });
-}
-
-async function applyTrackAmbiance(track) {
-  const bloom = document.getElementById('bg-bloom');
-  if (!track || !track.id) {
-    if (bloom) {
-      bloom.style.backgroundImage = '';
-      bloom.classList.remove('is-on');
-    }
-    return;
-  }
-  const token = ++ambianceToken;
-  const bloomUrl = thumbOf(track, 'mqdefault');
-  if (bloom) {
-    bloom.style.backgroundImage = `url("${bloomUrl}")`;
-    bloom.classList.add('is-on');
-  }
-  if (ambianceCache.has(track.id)) {
-    applyPalette(ambianceCache.get(track.id));
-    return;
-  }
-  const encoded = encodeURIComponent(`https://i.ytimg.com/vi/${track.id}/mqdefault.jpg`);
-  const sources = [
-    `https://wsrv.nl/?url=${encoded}&w=64&h=64&output=jpg`,
-    `https://images.weserv.nl/?url=${encoded}&w=64&h=64&output=jpg`,
-    thumbOf(track, 'mqdefault')
-  ];
-  for (const src of sources) {
-    try {
-      const img = await loadAmbianceImage(src);
-      if (token !== ambianceToken) return;
-      const palette = paletteFromImage(img);
-      if (!palette) continue;
-      ambianceCache.set(track.id, palette);
-      applyPalette(palette);
-      return;
-    } catch (_) {}
-  }
-}
-
 // ------------------------------------------------------------
 // 4. RENDERING & UI SYNC
 // ------------------------------------------------------------
@@ -617,7 +425,6 @@ function renderTrack() {
     active.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }
   updateMediaSession();
-  applyTrackAmbiance(t);
 }
 
 function renderList() {
