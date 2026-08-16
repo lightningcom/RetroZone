@@ -81,118 +81,150 @@ a {
 
 .bg__bloom {
   position: absolute;
-  inset: -30%;
+  inset: -42%;
   background-size: cover;
-  background-position: center;
-  filter: blur(72px) saturate(1.55) brightness(0.85);
+  background-position: 40% 50%;
+  filter: blur(80px) saturate(1.85) brightness(0.95);
   opacity: 0;
-  transform: scale(1.45);
-  transition: opacity 0.9s ease, filter 0.9s ease;
+  transform: scale(1.55);
   pointer-events: none;
 }
 
 .bg__bloom.is-on {
-  opacity: 0.55;
+  opacity: 0.78;
+  animation: waterBloom 26s ease-in-out infinite;
 }
 
 .bg__aurora {
   position: absolute;
-  inset: -55%;
+  inset: -70%;
   background: conic-gradient(
-    from 200deg at 50% 45%,
-    transparent 0deg,
-    var(--wash-a) 70deg,
-    transparent 125deg,
-    var(--wash-b) 190deg,
-    transparent 250deg,
-    var(--wash-c) 310deg,
+    from 180deg at 48% 52%,
+    var(--wash-a) 0deg,
+    transparent 55deg,
+    var(--wash-b) 110deg,
+    transparent 165deg,
+    var(--wash-c) 220deg,
+    transparent 275deg,
+    var(--wash-a) 320deg,
     transparent 360deg
   );
-  filter: blur(48px) saturate(140%);
-  opacity: 0.7;
-  animation: auroraSpin 32s linear infinite;
+  filter: blur(54px) saturate(160%);
+  opacity: 0.88;
+  animation: waterSpin 40s linear infinite;
   pointer-events: none;
 }
 
 .bg__wash {
   position: absolute;
-  inset: -28%;
+  inset: -45%;
   background:
-    radial-gradient(ellipse 48% 40% at 18% 28%, var(--wash-a) 0%, transparent 62%),
-    radial-gradient(ellipse 52% 44% at 84% 16%, var(--wash-b) 0%, transparent 58%),
-    radial-gradient(ellipse 58% 46% at 48% 92%, var(--wash-c) 0%, transparent 62%);
-  filter: blur(18px);
-  animation: washDrift 16s ease-in-out infinite alternate;
+    radial-gradient(ellipse 78% 62% at 18% 32%, var(--wash-a) 0%, transparent 58%),
+    radial-gradient(ellipse 72% 68% at 86% 18%, var(--wash-b) 0%, transparent 54%),
+    radial-gradient(ellipse 90% 70% at 48% 96%, var(--wash-c) 0%, transparent 56%);
+  filter: blur(28px);
+  opacity: 0.95;
+  animation: waterTide 18s ease-in-out infinite;
   pointer-events: none;
   transition: background 0.8s ease;
 }
 
 .bg__wash--alt {
-  inset: -35%;
-  opacity: 0.55;
+  inset: -52%;
+  opacity: 0.8;
   mix-blend-mode: screen;
-  animation: washDriftAlt 22s ease-in-out infinite alternate;
+  animation: waterTideAlt 24s ease-in-out infinite;
 }
 
-@keyframes washDrift {
-  from { transform: translate3d(-6%, -4%, 0) scale(1.05); }
-  to { transform: translate3d(7%, 5%, 0) scale(1.18); }
+.bg__wash--deep {
+  inset: -58%;
+  opacity: 0.7;
+  mix-blend-mode: plus-lighter;
+  animation: waterTideDeep 32s ease-in-out infinite;
+  background:
+    radial-gradient(ellipse 88% 74% at 50% 50%, var(--wash-a) 0%, transparent 52%),
+    radial-gradient(ellipse 64% 80% at 8% 78%, var(--wash-c) 0%, transparent 50%),
+    radial-gradient(ellipse 70% 60% at 92% 62%, var(--wash-b) 0%, transparent 48%);
 }
 
-@keyframes washDriftAlt {
-  from { transform: translate3d(5%, 6%, 0) scale(1.1) rotate(-8deg); }
-  to { transform: translate3d(-8%, -5%, 0) scale(1.22) rotate(10deg); }
+@keyframes waterTide {
+  0%   { transform: translate3d(-16%, 10%, 0) scale(1.18) rotate(-8deg); }
+  25%  { transform: translate3d(14%, -12%, 0) scale(1.32) rotate(7deg); }
+  50%  { transform: translate3d(18%, 14%, 0) scale(1.22) rotate(-5deg); }
+  75%  { transform: translate3d(-12%, 16%, 0) scale(1.36) rotate(9deg); }
+  100% { transform: translate3d(-16%, 10%, 0) scale(1.18) rotate(-8deg); }
 }
 
-@keyframes auroraSpin {
-  from { transform: rotate(0deg) scale(1.2); }
-  to { transform: rotate(360deg) scale(1.2); }
+@keyframes waterTideAlt {
+  0%   { transform: translate3d(18%, -14%, 0) scale(1.24) rotate(10deg); }
+  33%  { transform: translate3d(-20%, 8%, 0) scale(1.4) rotate(-12deg); }
+  66%  { transform: translate3d(10%, 18%, 0) scale(1.28) rotate(6deg); }
+  100% { transform: translate3d(18%, -14%, 0) scale(1.24) rotate(10deg); }
+}
+
+@keyframes waterTideDeep {
+  0%   { transform: translate3d(-8%, -10%, 0) scale(1.3) rotate(4deg); }
+  50%  { transform: translate3d(12%, 12%, 0) scale(1.48) rotate(-10deg); }
+  100% { transform: translate3d(-8%, -10%, 0) scale(1.3) rotate(4deg); }
+}
+
+@keyframes waterSpin {
+  0%   { transform: rotate(0deg) translate3d(-10%, 8%, 0) scale(1.4); }
+  50%  { transform: rotate(180deg) translate3d(12%, -10%, 0) scale(1.55); }
+  100% { transform: rotate(360deg) translate3d(-10%, 8%, 0) scale(1.4); }
+}
+
+@keyframes waterBloom {
+  0%   { background-position: 28% 42%; transform: scale(1.5) translate3d(-6%, 4%, 0); }
+  40%  { background-position: 72% 58%; transform: scale(1.72) translate3d(7%, -6%, 0); }
+  70%  { background-position: 48% 78%; transform: scale(1.58) translate3d(-4%, 8%, 0); }
+  100% { background-position: 28% 42%; transform: scale(1.5) translate3d(-6%, 4%, 0); }
 }
 
 .genre--highway {
-  --wash-a: rgba(255, 170, 60, 0.38);
-  --wash-b: rgba(90, 160, 255, 0.18);
-  --wash-c: rgba(255, 110, 40, 0.22);
+  --wash-a: rgba(255, 170, 60, 0.72);
+  --wash-b: rgba(90, 160, 255, 0.48);
+  --wash-c: rgba(255, 110, 40, 0.52);
   --wash-top: #08131c;
   --wash-mid: #1a2430;
   --wash-bot: #0c1014;
 }
 .genre--dhaba {
-  --wash-a: rgba(255, 150, 70, 0.34);
-  --wash-b: rgba(255, 210, 140, 0.16);
-  --wash-c: rgba(180, 90, 40, 0.22);
+  --wash-a: rgba(255, 150, 70, 0.7);
+  --wash-b: rgba(255, 210, 140, 0.42);
+  --wash-c: rgba(180, 90, 40, 0.5);
   --wash-top: #0c1218;
   --wash-mid: #241910;
   --wash-bot: #0a0806;
 }
 .genre--dance2000 {
-  --wash-a: rgba(210, 80, 255, 0.28);
-  --wash-b: rgba(80, 120, 255, 0.22);
-  --wash-c: rgba(255, 60, 140, 0.18);
+  --wash-a: rgba(210, 80, 255, 0.62);
+  --wash-b: rgba(80, 120, 255, 0.5);
+  --wash-c: rgba(255, 60, 140, 0.48);
   --wash-top: #0c0618;
   --wash-mid: #1a1030;
   --wash-bot: #080510;
 }
 .genre--retro90s {
-  --wash-a: rgba(255, 80, 140, 0.28);
-  --wash-b: rgba(255, 180, 90, 0.16);
-  --wash-c: rgba(160, 70, 200, 0.2);
+  --wash-a: rgba(255, 80, 140, 0.62);
+  --wash-b: rgba(255, 180, 90, 0.42);
+  --wash-c: rgba(160, 70, 200, 0.48);
   --wash-top: #120814;
   --wash-mid: #241428;
   --wash-bot: #0a060e;
 }
 .genre--antidepression {
-  --wash-a: rgba(70, 210, 160, 0.28);
-  --wash-b: rgba(120, 200, 255, 0.16);
-  --wash-c: rgba(40, 140, 110, 0.2);
+  --wash-a: rgba(70, 210, 160, 0.6);
+  --wash-b: rgba(120, 200, 255, 0.42);
+  --wash-c: rgba(40, 140, 110, 0.48);
   --wash-top: #061410;
   --wash-mid: #10241c;
   --wash-bot: #050c08;
 }
 .genre--fredagain {
-  --wash-a: rgba(40, 220, 255, 0.26);
-  --wash-b: rgba(120, 90, 255, 0.2);
-  --wash-c: rgba(40, 120, 255, 0.18);
+  --wash-a: rgba(40, 220, 255, 0.58);
+  --wash-b: rgba(120, 90, 255, 0.48);
+  --wash-c: rgba(40, 120, 255, 0.42);
   --wash-top: #070814;
   --wash-mid: #12142c;
   --wash-bot: #06070f;
@@ -203,10 +235,10 @@ a {
   inset: 0;
   background: linear-gradient(
     to bottom,
-    rgba(6, 10, 16, 0.42) 0%,
-    rgba(6, 10, 16, 0.08) 28%,
-    rgba(6, 10, 16, 0.12) 58%,
-    rgba(6, 10, 16, 0.55) 100%
+    rgba(6, 10, 16, 0.28) 0%,
+    rgba(6, 10, 16, 0.02) 32%,
+    rgba(6, 10, 16, 0.06) 62%,
+    rgba(6, 10, 16, 0.4) 100%
   );
   pointer-events: none;
 }

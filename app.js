@@ -498,16 +498,16 @@ function paletteFromImage(img) {
   const c1 = ranked[0];
   const c2 = ranked.find((c, i) => i > 0 && Math.abs(c.r - c1.r) + Math.abs(c.g - c1.g) + Math.abs(c.b - c1.b) > 80) || ranked[Math.min(1, ranked.length - 1)];
   const c3 = ranked.find((c, i) => i > 0 && c !== c2 && Math.abs(c.r - c1.r) + Math.abs(c.g - c1.g) + Math.abs(c.b - c1.b) > 50) || ranked[Math.min(2, ranked.length - 1)];
-  const v1 = saturateRgb(c1.r, c1.g, c1.b, 1.45);
-  const v2 = saturateRgb(c2.r, c2.g, c2.b, 1.3);
-  const v3 = saturateRgb(c3.r, c3.g, c3.b, 1.25);
-  const deep = mixToward(v1[0], v1[1], v1[2], 8, 10, 16, 0.82);
-  const mid = mixToward(v1[0], v1[1], v1[2], 12, 16, 24, 0.7);
-  const bot = mixToward(v3[0], v3[1], v3[2], 6, 8, 12, 0.86);
+  const v1 = saturateRgb(c1.r, c1.g, c1.b, 1.7);
+  const v2 = saturateRgb(c2.r, c2.g, c2.b, 1.5);
+  const v3 = saturateRgb(c3.r, c3.g, c3.b, 1.45);
+  const deep = mixToward(v1[0], v1[1], v1[2], 8, 10, 16, 0.74);
+  const mid = mixToward(v1[0], v1[1], v1[2], 12, 16, 24, 0.58);
+  const bot = mixToward(v3[0], v3[1], v3[2], 6, 8, 12, 0.8);
   return {
-    a: rgbaStr(v1[0], v1[1], v1[2], 0.5),
-    b: rgbaStr(v2[0], v2[1], v2[2], 0.36),
-    c: rgbaStr(v3[0], v3[1], v3[2], 0.3),
+    a: rgbaStr(v1[0], v1[1], v1[2], 0.78),
+    b: rgbaStr(v2[0], v2[1], v2[2], 0.62),
+    c: rgbaStr(v3[0], v3[1], v3[2], 0.55),
     top: rgbStr(deep[0], deep[1], deep[2]),
     mid: rgbStr(mid[0], mid[1], mid[2]),
     bot: rgbStr(bot[0], bot[1], bot[2])
