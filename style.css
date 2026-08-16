@@ -4,7 +4,8 @@
    ============================================================ */
 
 :root {
-  --logo-size: clamp(3rem, 11vw, 7.5rem);
+  --logo-size: clamp(3.8rem, 15vw, 9.75rem);
+  --display: "Baloo 2", "Kohinoor Devanagari", "Nirmala UI", "Noto Sans Devanagari", ui-rounded, sans-serif;
   --edge: clamp(0.9rem, 2.4vw, 1.8rem);
   --dock-lift: clamp(1.8rem, 4.2vh, 2.8rem);
   
@@ -409,13 +410,14 @@ main.main {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  line-height: 0.88;
+  line-height: 1.02;
   pointer-events: auto;
   user-select: none;
 }
 
 .logo__l1 {
-  font-family: 'Yatra One', 'Noto Sans Devanagari', sans-serif;
+  font-family: var(--display);
+  font-weight: 800;
   display: block;
   font-size: var(--logo-size);
   color: #ffffff;
@@ -424,16 +426,17 @@ main.main {
     0 4px 12px rgba(0, 0, 0, 0.85),
     0 12px 40px rgba(0, 0, 0, 0.9),
     0 0 48px rgba(0, 0, 0, 0.55);
-  letter-spacing: -1px;
+  letter-spacing: 0.02em;
 }
 
 .logo__l2 {
-  font-family: 'Yatra One', 'Noto Sans Devanagari', sans-serif;
+  font-family: var(--display);
+  font-weight: 700;
   display: block;
-  font-size: calc(var(--logo-size) * 0.38);
+  font-size: calc(var(--logo-size) * 0.42);
   color: #ffffff;
-  margin-top: 0.15em;
-  letter-spacing: -0.5px;
+  margin-top: 0.08em;
+  letter-spacing: 0.03em;
   text-shadow:
     0 1px 0 rgba(0, 0, 0, 0.7),
     0 4px 14px rgba(0, 0, 0, 0.85),
@@ -469,8 +472,9 @@ main.main {
 }
 
 .bumper__text {
-  font-family: 'Yatra One', 'Noto Sans Devanagari', sans-serif;
-  font-size: clamp(0.95rem, 2.6vw, 1.25rem);
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(1.05rem, 3vw, 1.45rem);
   color: #fff;
   text-align: center;
   flex: 1;
