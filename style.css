@@ -423,14 +423,14 @@ main.main {
 }
 
 .logo__l1 {
-  font-family: var(--mark);
-  font-weight: 400;
+  font-family: "Noto Serif Devanagari", "Tiro Devanagari Hindi", "Noto Sans Devanagari", serif;
+  font-weight: 800;
   display: block;
   font-size: var(--logo-size);
-  line-height: 1.35;
-  padding: 0.16em 0.1em 0.04em;
+  line-height: 1.42;
+  padding: 0.2em 0.12em 0.08em;
   overflow: visible;
-  letter-spacing: 0.01em;
+  letter-spacing: 0.02em;
   background: linear-gradient(180deg, #ffffff 8%, #fff6f7 52%, #ffd5dc 100%);
   -webkit-background-clip: text;
   background-clip: text;
