@@ -189,7 +189,6 @@ const el = {
   clock: $('clock'),
   weatherTemp: $('weather-temp'),
   weatherIcon: $('weather-icon'),
-  weatherCity: $('weather-city'),
   presenceText: $('presence-text'),
   bumperText: $('bumper-text'),
   bumperNext: $('bumper-next'),
@@ -1141,7 +1140,6 @@ async function fetchWeather() {
     if (!data || !data.main) return;
     el.weatherTemp.textContent = Math.round(data.main.temp) + "°C";
     el.weatherIcon.textContent = getWeatherEmoji((data.weather && data.weather[0] && data.weather[0].id) || 801);
-    el.weatherCity.textContent = data.name || "आपकी जगह";
   };
 
   try {
@@ -1162,7 +1160,6 @@ async function fetchWeather() {
     else {
       el.weatherTemp.textContent = "--°C";
       el.weatherIcon.textContent = "⛅";
-      el.weatherCity.textContent = "लोकेशन बंद";
     }
   }
 }
